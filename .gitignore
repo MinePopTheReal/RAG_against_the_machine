@@ -1,2 +1,3 @@
 .mypy_cache/
 subject_ressources/
+.python-version
