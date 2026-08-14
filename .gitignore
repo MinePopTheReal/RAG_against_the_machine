@@ -1,3 +1,6 @@
 .mypy_cache/
 subject_ressources/
 .python-version
+__pycache__/
+.venv/
+.vscode/
