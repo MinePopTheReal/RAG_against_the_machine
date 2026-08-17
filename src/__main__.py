@@ -10,31 +10,30 @@ def main():
     # if flags.
     # IndexingPipeline(50).browse_raw_data()
 
-    import bm25s
+    # import bm25s
 
-    # Create your corpus here
-    corpus = [
-        "a cat is a feline and likes to purr",
-        "a dog is the human's best friend and loves to play",
-        "a bird is a beautiful animal that can fly",
-    ]
+    # # Create your corpus here
+    # corpus = [
+    #     "a cat is a feline and likes to purr",
+    #     "a dog is the human's best friend and loves to play",
+    #     "a bird is a beautiful animal that can fly",
+    # ]
 
-    # Tokenize the corpus and index it
+    # # Tokenize the corpus and index it
 
 
-    # You can now search the corpus with a query
-    query = "does the fish purr like a cat?"
-    query_tokens = bm25s.tokenize(query)
-    docs, scores = retriever.retrieve(query_tokens, k=2)
-    print(docs)
-    print(scores)
-    print(f"Best result (score: {scores[0, 0]:.2f}): {docs[0, 0]}")
+    # # You can now search the corpus with a query
+    # query = "does the fish purr like a cat?"
 
-    # Happy with your index? Save it for later...
-    retriever.save("bm25s_index_animals")
+    # print(docs)
+    # print(scores)
+    # print(f"Best result (score: {scores[0, 0]:.2f}): {docs[0, 0]}")
 
-    # ...and load it when needed
-    ret_loaded = bm25s.BM25.load("bm25s_index_animals", load_corpus=True)
+    # # Happy with your index? Save it for later...
+    # retriever.save("bm25s_index_animals")
+
+    # # ...and load it when needed
+    # ret_loaded = bm25s.BM25.load("bm25s_index_animals", load_corpus=True)
 
 if __name__ == "__main__":
     try:

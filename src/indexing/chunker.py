@@ -3,7 +3,7 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     Language
 )
-from json import dump
+from src.utils.default_path import DefaultPath
 from src.utils.file_manager import FileManager
 from src.models.models import MinimalSource
 
@@ -61,22 +61,23 @@ class Chunker:
         text_data = text_splitter.create_documents([file_data])
         return text_data
 
-    def _save_chunks(self, chunks: list[Document], file_data: str, file_path: str) -> list[MinimalSource]:
+    def _save_chunks(self, chunks: list[Document], file_data: str, file_path: str) -> tuple[list[MinimalSource], list[str]]:
         final_chunks: list[MinimalSource] = []
+        texts: list[str] = []
 
         cursor: int = 0
         for chunk in chunks:
             indexs = self._find_indexs(file_data, chunk, cursor)
             cursor = indexs[1]
 
+            texts.append(chunk.page_content)
             final_chunk = MinimalSource(
-                text=chunk.page_content,
                 file_path=file_path,
                 first_character_index=indexs[0],
                 last_character_index=indexs[1]
                 )
             final_chunks.append(final_chunk)
-        return final_chunks
+        return final_chunks, texts
 
     @staticmethod
     def _find_indexs(file_data: str, chunk: Document, start_index: int) -> tuple[int, int]:
@@ -85,7 +86,7 @@ class Chunker:
         end_index = start_index + len(chunk.page_content)
         return start_index, end_index
 
-    def chunker(self, file_data: str, file_path: str, extension_name: str | None) -> list[MinimalSource]:
+    def chunker(self, file_data: str, file_path: str, extension_name: str | None) -> tuple[list[MinimalSource], list[str]]:
         if extension_name in FILE_EXTENSION:
             chunks = self._code_chunker(
                 file_data,
@@ -94,11 +95,11 @@ class Chunker:
         else:
             chunks = self._txt_chunker(file_data)
 
-        final_chunks = self._save_chunks(chunks, file_data, file_path)
-        return final_chunks
+        final_chunks, texts = self._save_chunks(chunks, file_data, file_path)
+        return final_chunks, texts
 
     @staticmethod
-    def output(chunks: list[MinimalSource], output_path: str):
+    def output(chunks: list[MinimalSource], texts: list[str]):
         obj_for_json = [
             {
                 "file_path": chunk.file_path,
@@ -106,4 +107,5 @@ class Chunker:
                 "last_character_index": chunk.last_character_index
             } for chunk in chunks
         ]
-        FileManager.write(obj_for_json, output_path)
+        FileManager.write(texts, DefaultPath.chunked_source)
+        FileManager.write(obj_for_json, DefaultPath.minimal_source)

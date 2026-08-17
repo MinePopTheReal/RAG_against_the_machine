@@ -4,3 +4,7 @@ subject_ressources/
 __pycache__/
 .venv/
 .vscode/
+output.txt
+moulinette
+data/output/
+data/processed/

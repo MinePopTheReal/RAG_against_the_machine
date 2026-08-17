@@ -2,35 +2,39 @@ from fire import Fire
 from src.indexing.indexing_pipeline import IndexingPipeline
 from src.retrieving.retriever_pipeline import RetrieverPipeline
 from src.message.success import SuccessMessage
-
+from src.models.models import MinimalSource
+from src.utils.default_path import DefaultPath
 
 class Flags():
     @staticmethod
     def index(
-        max_chunck_size: int = 2000,
+        max_chunk_size: int = 2000,
         repository_path: str = 'data/raw/vllm-0.10.1',
         chunk_overlap: int = 0,
-        output_path: str = 'data/processed'
     ):
-        indexer = IndexingPipeline(max_chunck_size, chunk_overlap, output_path)
+        indexer = IndexingPipeline(max_chunk_size, chunk_overlap)
         indexer.browse_raw_for_chunking(repository_path)
         indexer.indexing()
-        print(SuccessMessage(f"Ingestion complete! Indices saved under {output_path}"))
+        print(SuccessMessage(f"Ingestion complete! Indices saved under {DefaultPath.output}"))
 
     @staticmethod
-    def search(query: str, k: int):
-        # wait implementation of search methodes
-        print(query, k)
+    def search(query: str, k: int = 5) -> list[MinimalSource]:
+        retriever = RetrieverPipeline(k)
+        retrieved_chunk = retriever.retrieve_chunks_for_query(query)
+
+        return retrieved_chunk
 
     @staticmethod
     def search_dataset(
-        datasets_path: str,
+        dataset_path: str,
         save_directory: str,
         k: int = 5
         ):
-        retriever = RetrieverPipeline(datasets_path, k, save_directory)
-        # wait implementation of search_dataset methodes
-        print(datasets_path, k, save_directory)
+        retriever = RetrieverPipeline(k)
+        retriever.retrieve_chunks_for_dataset(dataset_path, save_directory)
+        print(SuccessMessage((
+                f"Saved student_search_results to {save_directory}"
+            )))
 
     @staticmethod
     def answer(query: str, k: int):

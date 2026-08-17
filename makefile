@@ -1,4 +1,4 @@
-TEMP_FILE := .mypy_cache
+TEMP_FILE := .mypy_cache data/processed data/output
 MYPY_FLAG := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 UV := uv
