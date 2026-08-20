@@ -1,10 +1,14 @@
 .mypy_cache/
-subject_ressources/
-.python-version
 __pycache__/
 .venv/
 .vscode/
+.python-version
+
+subject_ressources/
+
 output.txt
 moulinette
 data/output/
+data/raw1/
 data/processed/
+exec.sh
