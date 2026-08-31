@@ -11,7 +11,8 @@ class DefaultPath:
     chunked_source = Path(output) / "chunked_source.json"
     minimal_source = Path(output) / "minimal_source.json"
 
-    index = Path(output) / "bm25"
+    bm25_index = Path(output) / "indexs/bm25"
+    semantic_index = Path(output) / "indexs/faiss_index.index"
 
 
 

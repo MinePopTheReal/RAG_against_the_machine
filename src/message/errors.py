@@ -35,6 +35,15 @@ class IndexingError(Error):
 
     default_type = "indexing"
 
+class RetrievingError(Error):
+    """Exception raised during retrieving phase."""
+
+    default_type = "retrieving"
+
+class AnswerError(Error):
+    """Exception raised during answer phase."""
+
+    default_type = "answer"
 
 class CliError(Error):
     """Exception raised by the command line interface."""

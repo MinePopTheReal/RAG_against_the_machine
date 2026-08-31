@@ -1,22 +1,16 @@
 from bm25s import BM25, tokenize
-from pathlib import Path
+from src.message.errors import RetrievingError
 from src.utils.file_manager import FileManager
 from json import loads
 from src.models.models import MinimalSearchResults, MinimalSource
-import numpy as np
+from numpy import array
 from src.utils.default_path import DefaultPath
 from tqdm import tqdm
-
+from src.indexing.indexer import IndexerBm25, IndexerSemanticEmbedding
 
 class RetrieverPipeline:
     def __init__(self, k: int) -> None:
         self.k = k
-
-
-    @staticmethod
-    def _load_index()-> BM25:
-        retriever_loaded = BM25.load(DefaultPath.index)
-        return retriever_loaded
 
     @staticmethod
     def _load_index_json(minimal_source_file_path: str):
@@ -31,25 +25,37 @@ class RetrieverPipeline:
         data_obj = loads(data)
         return data_obj['rag_questions']
 
+    @staticmethod
+    def loads_index():
+        index_bm25 = IndexerBm25(DefaultPath.bm25_index)._load_index()
+        index_embedding = IndexerSemanticEmbedding(DefaultPath.semantic_index)._load_index()
+
+        return (index_bm25, index_embedding)
+
     def retrieve_chunks_for_query(self, query: str) -> MinimalSource:
-        retriever = self._load_index()
+        indexs = self.loads_index()
+
         minimal_source = self._load_index_json(DefaultPath.minimal_source)
 
-        loaded_minimal_source = np.array([minimal_source])
+        # loaded_minimal_source = array([minimal_source])
 
-        query_tokens = tokenize(query)
 
-        docs, scores = retriever.retrieve(query_tokens, k=self.k)
 
-        docs = [doc for i, doc in enumerate(docs) if scores[0][i] >= 0.5]
+        # query_tokens = tokenize(query)
 
-        retieval_minimal_source = []
-        for doc in docs[0]:
-            minimal_source = loaded_minimal_source[0][doc]
-            retieval_minimal_source.append(MinimalSource(**minimal_source))
+        # docs, scores = retriever.retrieve(query_tokens, k=self.k)
 
-        return retieval_minimal_source
+        # docs = [doc for i, doc in enumerate(docs) if scores[0][i]]
+        # retieval_minimal_source = []
 
+        # if not docs:
+        #     raise RetrievingError("No chunks were found.")
+
+        # for doc in docs[0]:
+        #     minimal_source = loaded_minimal_source[0][doc]
+        #     retieval_minimal_source.append(MinimalSource(**minimal_source))
+
+        # return retieval_minimal_source
 
     def retrieve_chunks_for_dataset(self, dataset_path, save_directory):
         search_results: list[MinimalSearchResults] = []
@@ -83,8 +89,7 @@ class RetrieverPipeline:
                         "file_path": source.file_path,
                         "first_character_index": source.first_character_index,
                         "last_character_index": source.last_character_index
-                        
-                    }for source in result.retrieved_sources]
+                        } for source in result.retrieved_sources]
                 }
             )
 

@@ -1,7 +1,7 @@
 from src.indexing.chunker import Chunker, MinimalSource
 from src.utils.default_path import DefaultPath
 from src.utils.file_manager import FileManager
-from src.indexing.Indexer import Indexer
+from src.indexing.indexer import Indexer, IndexerBm25, IndexerSemanticEmbedding
 from pathlib import Path
 from tqdm import tqdm
 from os import walk
@@ -17,7 +17,6 @@ class IndexingPipeline:
         self.chunk_overlap: int = chunk_overlap
         
         self.chunker = Chunker(self.chunk_size, self.chunk_overlap)
-        self.indexer = Indexer()
 
         self.chunks: list[MinimalSource] = []
 
@@ -46,7 +45,7 @@ class IndexingPipeline:
                 ascii="·■"
             )
 
-            for file_name in files_pbar:
+            for file_name in files:
                 files_pbar.set_description(
                     f"File: {file_name:<30.30}"
                 )
@@ -70,9 +69,10 @@ class IndexingPipeline:
         self.chunker.output(self.chunks, self.corpus)
 
     def indexing(self):
-        retriever = self.indexer.bm25(self.corpus)
-        retriever.save(DefaultPath.index)
+        indexer_bm25 = IndexerBm25(DefaultPath.bm25_index)
+        indexer_bm25.create_and_save_index(self.corpus)
 
-
-
-
+        indexer_semanctic = IndexerSemanticEmbedding(
+            DefaultPath.semantic_index
+            )
+        indexer_semanctic.create_and_save_index(self.corpus)

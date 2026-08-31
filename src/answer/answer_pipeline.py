@@ -10,7 +10,7 @@ from tqdm import tqdm
 class AnswerPipeline:
 
     @staticmethod
-    def answer_generating_with_query(query:str, retrieved_sources: list[MinimalSource]) -> str:
+    def answer_generating_for_query(query:str, retrieved_sources: list[MinimalSource]) -> str:
         model: str = "qwen3:0.6b"
 
         context = Augmenting(retrieved_sources).create_contexte(query)
@@ -45,7 +45,7 @@ class AnswerPipeline:
         loaded_datas = loads(datas)
         return loaded_datas
 
-    def answer_generating_with_queries(self, student_search_results_path: str, save_directory: str):
+    def answer_generating_for_dataset(self, student_search_results_path: str, save_directory: str):
         datas = self._load_student_search_results(student_search_results_path)
         
         responses: list[MinimalAnswer | str | list[dict[str, str] | MinimalSource]] = []

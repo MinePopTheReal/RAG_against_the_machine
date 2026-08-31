@@ -4,6 +4,7 @@ from src.retrieving.retriever_pipeline import RetrieverPipeline
 from src.message.success import SuccessMessage
 from src.models.models import MinimalSource
 from src.utils.default_path import DefaultPath
+from src.answer.answer_pipeline import AnswerPipeline
 
 class Flags():
     @staticmethod
@@ -36,15 +37,20 @@ class Flags():
                 f"Saved student_search_results to {save_directory}"
             )))
 
-    @staticmethod
-    def answer(query: str, k: int):
-        # wait implementation of answer methodes
-        print(query, k)
+    def answer(self, query: str, k: int):
+        retrieved_source = self.search(query, k)
+        
+        answer = AnswerPipeline().answer_generating(query, retrieved_source)
+        print(answer)
 
     @staticmethod
     def answer_dataset(student_search_results_path: str, save_directory: str):
-        # wait implementation of answer_dataset methodes
-        print(student_search_results_path, save_directory)
+        test = AnswerPipeline().answer_generating_with_queries(student_search_results_path, save_directory)
+        print(SuccessMessage(
+            "Saved student_search_results_and_answer to "
+            f"{save_directory}"
+            )
+        )
 
     @staticmethod
     def evaluate(student_search_results_path: str, dataset_path: str):

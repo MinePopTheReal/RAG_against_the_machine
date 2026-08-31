@@ -32,7 +32,7 @@ class FileManager:
         return data
 
     @staticmethod
-    def write(obj: list[Any], file_path: str):
+    def write(obj: Any, file_path: str):
         try:
             path = Path(file_path)
             path.parent.mkdir(parents=True, exist_ok=True)

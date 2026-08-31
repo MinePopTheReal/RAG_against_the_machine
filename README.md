@@ -1,11 +1,20 @@
-
+```text
+<|im_start|>system
+{sont but}<|im_end|>
+<|im_start|>user
+{message utilisateur}<|im_end|>
+<|im_start|>assistant
+{reponse du model}<|im_end|>
+<|im_start|>user
+{message utilisateur}<|im_end|>
+```
 
 ## Instructions
     Indexing command:
     ```
     uv run python3 -m src index
     # Optional argument:
-        --max_chunck_size (default -> 2000)
+        --max_chunk_size (default -> 2000)
         --repository_path (default -> 'data/raw/vllm-0.10.1')
         --chunk_overlap (default -> 0)
         --output_path (default -> 'data/processed')
@@ -19,6 +28,12 @@
 
     # Optional argument:
         --k (default -> 5)
+    ```
+    ```
+    uv run python3 -m src answer_dataset
+    
+    --student_search_results_path "data/output/output.json" 
+    --save_directory "data/output/output1.json"
     ```
 
 ## Ressources
