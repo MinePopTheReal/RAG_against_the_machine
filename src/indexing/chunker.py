@@ -1,10 +1,10 @@
+from src.utils.default_path import DefaultPath
+from src.utils.file_manager import FileManager
 from langchain_core.documents import Document
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     Language
 )
-from src.utils.default_path import DefaultPath
-from src.utils.file_manager import FileManager
 from src.models.models import MinimalSource
 
 

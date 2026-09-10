@@ -1,7 +1,7 @@
 from nncf.common.logging.logger import set_log_level
 from src.message.errors import Error
 from src.cli.cli import Flags
-from fire import Fire 
+from fire import Fire
 import datasets
 import logging
 import os

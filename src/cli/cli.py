@@ -5,7 +5,7 @@ from src.evaluation.evaluation import Evaluation
 from src.utils.default_path import DefaultPath
 from src.message.success import SuccessMessage
 from src.models.models import MinimalSource
-
+from typing import Any
 
 class Flags():
     @staticmethod
@@ -38,7 +38,7 @@ class Flags():
                 f"Saved student_search_results to {save_file_path}"
             )))
 
-    def answer(self, query: str, k: int) -> str:
+    def answer(self, query: str, k: int) -> Any:
         retrieved_source = self.search(query, k)
 
         answer = AnswerPipeline()

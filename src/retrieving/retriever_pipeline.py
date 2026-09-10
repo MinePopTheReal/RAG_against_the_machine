@@ -28,12 +28,18 @@ class RetrieverPipeline:
 
         self._executor = ThreadPoolExecutor(max_workers=2)
 
-        self.minimal_source: list[MinimalSource] = loads(FileManager.read(DefaultPath.minimal_source))
+        self.minimal_source: list[MinimalSource] = [
+            MinimalSource(**source)
+            for source in loads(
+            FileManager.read(DefaultPath.minimal_source)
+            )
+        ]
+
         self.bm25_retriever = BM25Retrieving(DefaultPath.bm25_index)
         self.embedding_retriever = EmbeddingRetrieving(DefaultPath.semantic_index, self.device)
         self.reranker = ReRank(self.device)
 
-    def load_batches(self, queries):
+    def load_batches(self, queries: list[str] | str) -> tuple[list[list[int]], list[list[int]]]:
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,
@@ -59,7 +65,7 @@ class RetrieverPipeline:
         combined = list(set(bm25_batches[0] + embedding_batches[0]))
         result = self.reranker.re_ranking(query, combined, self.k)
 
-        return [MinimalSource(**self.minimal_source[idx]) for idx in result]
+        return [self.minimal_source[idx] for idx in result]
 
     def retrieve_chunks_for_dataset(self, dataset_path: str, save_directory: str) -> str:
         datas = self._load_datasets(dataset_path)
@@ -81,7 +87,7 @@ class RetrieverPipeline:
             search_results.append(MinimalSearchResults(
                 question_id=data.question_id,
                 question=data.question,
-                retrieved_sources=[self.minimal_source[idx] for idx in reranked],
+                retrieved_sources=[self.minimal_source[idx] for idx in reranked]
             ))
 
         save_result = []
