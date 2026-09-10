@@ -1,19 +1,40 @@
 from src.message.errors import Error
-from json import dump
-from typing import Any
+from pydantic import BaseModel
+from json import dump, loads
+from typing import TypeVar
 from pathlib import Path
+from typing import Any
+
 
 class FileManager:
+    T = TypeVar('T' ,bound=BaseModel)
+
+    def load(self, file_path: str, return_type: type[T]) -> T:
+        
+        data = self.read(file_path)
+        try:
+            load_data = loads(data)
+            result = return_type(**load_data)
+        except ValueError as e:
+            raise Error(
+                "The file you tried to open is not a"
+                "valid file of the type you specified."
+            ) from e
+        return result
+
     @staticmethod
-    def _read(file_path: str) -> str:
+    def read(file_path: str) -> str:
+
         try:
             with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
                 data = f.read()
+
+            return data
         except IsADirectoryError as e:
             raise Error(
                 f"The path points to a folder: {file_path}"
             ) from e
-        
+
         except FileNotFoundError as e:
             raise Error(
                 f"File not found: {file_path}"
@@ -29,10 +50,9 @@ class FileManager:
                 f"Unable to read file: {file_path}"
             ) from e
 
-        return data
 
     @staticmethod
-    def write(obj: Any, file_path: str):
+    def write(obj: Any, file_path: str) -> None:
         try:
             path = Path(file_path)
             path.parent.mkdir(parents=True, exist_ok=True)

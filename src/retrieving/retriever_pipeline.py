@@ -1,83 +1,88 @@
-from bm25s import BM25, tokenize
-from src.message.errors import RetrievingError
-from src.utils.file_manager import FileManager
-from json import loads
-from src.models.models import MinimalSearchResults, MinimalSource
-from numpy import array
+from src.retrieving.retriever import BM25Retrieving, EmbeddingRetrieving
+from concurrent.futures import ThreadPoolExecutor
 from src.utils.default_path import DefaultPath
+from src.utils.file_manager import FileManager
+from src.retrieving.re_rank import ReRank
+from src.models.models import (
+    MinimalSearchResults,
+    MinimalSource,
+    RagDataset,
+    AnsweredQuestion,
+    UnansweredQuestion
+)
+from pathlib import Path
+from torch import cuda
+from json import loads
 from tqdm import tqdm
-from src.indexing.indexer import IndexerBm25, IndexerSemanticEmbedding
+from logging import getLogger, ERROR
+
+
+getLogger("huggingface_hub").setLevel(ERROR)
+
 
 class RetrieverPipeline:
     def __init__(self, k: int) -> None:
         self.k = k
 
+        self.device = "cuda" if cuda.is_available() else "cpu"
+
+        self._executor = ThreadPoolExecutor(max_workers=2)
+
+        self.minimal_source: list[MinimalSource] = loads(FileManager.read(DefaultPath.minimal_source))
+        self.bm25_retriever = BM25Retrieving(DefaultPath.bm25_index)
+        self.embedding_retriever = EmbeddingRetrieving(DefaultPath.semantic_index, self.device)
+        self.reranker = ReRank(self.device)
+
+    def load_batches(self, queries):
+        bm25_batches = self._executor.submit(
+            self.bm25_retriever._retrieving,
+            queries,
+            self.k
+        )
+
+        embedding_batches = self._executor.submit(
+            self.embedding_retriever._retrieving,
+            queries,
+            self.k
+        )
+        
+        return (bm25_batches.result(), embedding_batches.result())
+
     @staticmethod
-    def _load_index_json(minimal_source_file_path: str):
-        minimal_source = FileManager._read(minimal_source_file_path)
+    def _load_datasets(datasets_file_path: str) -> list[AnsweredQuestion | UnansweredQuestion]:
+        data = FileManager().load(datasets_file_path, RagDataset)
 
-        return loads(minimal_source)
+        return data.rag_questions
 
-    @staticmethod
-    def _load_datasets(datasets_file_path: str) -> list[dict[str, str]]:
-        data = FileManager._read(datasets_file_path)
+    def retrieve_chunks_for_query(self, query: str) -> list[MinimalSource]:
+        bm25_batches, embedding_batches = self.load_batches(query)
+        combined = list(set(bm25_batches[0] + embedding_batches[0]))
+        result = self.reranker.re_ranking(query, combined, self.k)
 
-        data_obj = loads(data)
-        return data_obj['rag_questions']
+        return [MinimalSource(**self.minimal_source[idx]) for idx in result]
 
-    @staticmethod
-    def loads_index():
-        index_bm25 = IndexerBm25(DefaultPath.bm25_index)._load_index()
-        index_embedding = IndexerSemanticEmbedding(DefaultPath.semantic_index)._load_index()
-
-        return (index_bm25, index_embedding)
-
-    def retrieve_chunks_for_query(self, query: str) -> MinimalSource:
-        indexs = self.loads_index()
-
-        minimal_source = self._load_index_json(DefaultPath.minimal_source)
-
-        # loaded_minimal_source = array([minimal_source])
-
-
-
-        # query_tokens = tokenize(query)
-
-        # docs, scores = retriever.retrieve(query_tokens, k=self.k)
-
-        # docs = [doc for i, doc in enumerate(docs) if scores[0][i]]
-        # retieval_minimal_source = []
-
-        # if not docs:
-        #     raise RetrievingError("No chunks were found.")
-
-        # for doc in docs[0]:
-        #     minimal_source = loaded_minimal_source[0][doc]
-        #     retieval_minimal_source.append(MinimalSource(**minimal_source))
-
-        # return retieval_minimal_source
-
-    def retrieve_chunks_for_dataset(self, dataset_path, save_directory):
-        search_results: list[MinimalSearchResults] = []
-
+    def retrieve_chunks_for_dataset(self, dataset_path: str, save_directory: str) -> str:
         datas = self._load_datasets(dataset_path)
+        queries = [d.question for d in datas]
 
-        for data in tqdm(
-            datas,
+        bm25_batches, embedding_batches = self.load_batches(queries)
+
+        search_results = []
+        for data, bm25_idxs, emb_idxs in tqdm(
+            zip(datas, bm25_batches, embedding_batches),
+            total=len(datas),
             desc=f"{"Retriving":<15.15}",
             colour="cyan",
             unit="queries",
             ascii="·■"
         ):
-            retieval_minimal_source = self.retrieve_chunks_for_query(data["question"])
-
-            search_results.append(
-                MinimalSearchResults(
-                    question_id=data['question_id'],
-                    question=data['question'],
-                    retrieved_sources=retieval_minimal_source
-                    )
-                )
+            combined = list(set(bm25_idxs + emb_idxs))
+            reranked = self.reranker.re_ranking(data.question, combined, self.k)
+            search_results.append(MinimalSearchResults(
+                question_id=data.question_id,
+                question=data.question,
+                retrieved_sources=[self.minimal_source[idx] for idx in reranked],
+            ))
 
         save_result = []
         for result in search_results:
@@ -93,5 +98,7 @@ class RetrieverPipeline:
                 }
             )
 
-        FileManager.write(save_result, save_directory)
+        path_save_file = str(Path(save_directory) / Path(dataset_path).name)
+        FileManager.write({"search_results":save_result, "k":self.k}, path_save_file)
 
+        return (path_save_file)

@@ -29,6 +29,10 @@ class Error(Exception):
             f"\n {self.tutorial}"
         )
 
+class CliError(Error):
+    """Exception raised by the command line interface."""
+
+    default_type = "cli"
 
 class IndexingError(Error):
     """Exception raised during indexing phase."""
@@ -45,17 +49,7 @@ class AnswerError(Error):
 
     default_type = "answer"
 
-class CliError(Error):
-    """Exception raised by the command line interface."""
+class EvaluateError(Error):
+    """Exception raised during evaluation phase."""
 
-    default_type = "cli"
-
-
-class MesssageError:
-    """
-    Stores error message templates and syntax information.
-
-    Provides predefined syntax descriptions and metadata hints used
-    to display helpful error messages.
-    """
-    pass
+    default_type = "evaluate"

@@ -1,11 +1,12 @@
+from src.indexing.indexer import IndexerBm25, IndexerSemanticEmbedding
 from src.indexing.chunker import Chunker, MinimalSource
 from src.utils.default_path import DefaultPath
 from src.utils.file_manager import FileManager
-from src.indexing.indexer import Indexer, IndexerBm25, IndexerSemanticEmbedding
+from src.message.errors import IndexingError
+from os import walk, listdir
 from pathlib import Path
 from tqdm import tqdm
-from os import walk
-
+from torch import cuda
 
 class IndexingPipeline:
     def __init__(
@@ -28,6 +29,9 @@ class IndexingPipeline:
     ) -> None:
         valid_extensions = {"py", "txt", "md"}
 
+        if not listdir(root_path_of_data):
+            raise(IndexingError("The repository you specified is empty."))
+
         for current_path, _, files in tqdm(
             list(walk(root_path_of_data)),
             desc=f"{"Chunking":<15.15}",
@@ -35,20 +39,7 @@ class IndexingPipeline:
             unit="folder",
             ascii="·■"
         ):
-            files_pbar = tqdm(
-                files,
-                desc="Files",
-                colour="cyan",
-                leave=False,
-                unit="file",
-                bar_format="{l_bar}{bar:30}{r_bar}",
-                ascii="·■"
-            )
-
             for file_name in files:
-                files_pbar.set_description(
-                    f"File: {file_name:<30.30}"
-                )
 
                 extension = Path(file_name).suffix.removeprefix(".")
 
@@ -56,7 +47,7 @@ class IndexingPipeline:
                     continue
 
                 file_path = Path(current_path) / file_name
-                file_data = FileManager._read(file_path)
+                file_data = FileManager.read(file_path)
 
                 chunks, texts = self.chunker.chunker(
                     file_data,
@@ -68,11 +59,14 @@ class IndexingPipeline:
                 self.chunks.extend(chunks)
         self.chunker.output(self.chunks, self.corpus)
 
-    def indexing(self):
+    def indexing(self) -> None:
+        device = "cuda" if cuda.is_available() else "cpu"
+
         indexer_bm25 = IndexerBm25(DefaultPath.bm25_index)
         indexer_bm25.create_and_save_index(self.corpus)
 
         indexer_semanctic = IndexerSemanticEmbedding(
+            device,
             DefaultPath.semantic_index
             )
         indexer_semanctic.create_and_save_index(self.corpus)

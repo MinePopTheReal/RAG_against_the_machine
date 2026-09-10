@@ -8,17 +8,17 @@ class Augmenting:
     def __init__(self, retrieved_sources: list[MinimalSource]):
         self.retrieved_sources = retrieved_sources
 
-    def _load_chunk_from_minimal_source(self):
+    def _load_chunk_from_minimal_source(self) -> list[str]:
         chunks: list[str] = []
         
         for source in self.retrieved_sources:
-            data = FileManager._read(source.file_path)
+            data = FileManager.read(source.file_path)
             chunk = data[source.first_character_index:source.last_character_index]
             chunks.append(chunk)
 
         return chunks
 
-    def create_contexte(self, query: str):
+    def create_contexte(self, query: str) -> list[dict[str, str]]:
         chunks = self._load_chunk_from_minimal_source()
 
         system = (

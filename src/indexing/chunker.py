@@ -65,10 +65,10 @@ class Chunker:
         final_chunks: list[MinimalSource] = []
         texts: list[str] = []
 
-        cursor: int = 0
+        start_from: int = 0
         for chunk in chunks:
-            indexs = self._find_indexs(file_data, chunk, cursor)
-            cursor = indexs[1]
+            indexs = self._find_indexs(file_data, chunk, start_from)
+            start_from = indexs[0]
 
             texts.append(chunk.page_content)
             final_chunk = MinimalSource(
@@ -99,7 +99,7 @@ class Chunker:
         return final_chunks, texts
 
     @staticmethod
-    def output(chunks: list[MinimalSource], texts: list[str]):
+    def output(chunks: list[MinimalSource], texts: list[str]) -> None:
         obj_for_json = [
             {
                 "file_path": chunk.file_path,

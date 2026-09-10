@@ -1,47 +1,26 @@
 from sentence_transformers import CrossEncoder
+from src.utils.file_manager import FileManager
+from src.utils.default_path import DefaultPath
+from json import loads
+from typing import Any
+import transformers
 
+transformers.logging.set_verbosity_error()
 
 class ReRank:
-    def __init__(self):
-        ...
+    def __init__(self, device) -> None:
+        self.device = device
+        self.reranker: CrossEncoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device=self.device)
+        self.corpus: list[str] = self._load_corpus()
 
-    def re_ranking(self, query, chunks: list):
-        reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    def _load_corpus(self) -> list[str] | Any:
+        corpus = FileManager.read(DefaultPath.chunked_source)
+        return loads(corpus)
 
-        reranking_input: tuple[str, list[str]] = (query, chunks)
+    def re_ranking(self, queries: str, chunks_idxs: list[int], k: int) -> list[int]:
+        chunks_idxs = list(set(chunks_idxs))
+        chunks = [self.corpus[idx] for idx in chunks_idxs]
 
-        reranker.predict()
+        results = self.reranker.rank(queries, chunks, device=self.device, batch_size=256)
 
-
-# # Modèle pré-entraîné, prêt à l'emploi (pas de fine-tuning nécessaire pour commencer)
-# # ms-marco-MiniLM : rapide, bon compromis vitesse/qualité, entraîné sur des paires question/passage
-
-# # Si tes documents sont en français ou multilingues, préfère un modèle multilingue :
-# # reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
-
-# def rerank(query: str, candidates: list[dict], top_k: int = 5) -> list[dict]:
-#     """
-#     query      : la requête utilisateur
-#     candidates : liste de chunks, ex: [{"id": "c1", "text": "..."}, ...]
-#                  (issus de ton retrieval large, BM25+FAISS, N=20-50 chunks)
-#     top_k      : nombre de chunks à garder après reranking
-#     """
-#     # Le cross-encoder attend des paires (requête, texte_du_chunk)
-#     pairs = [(query, c["text"]) for c in candidates]
-
-#     # Une seule passe, en batch, pour tous les candidats
-#     scores = reranker.predict(pairs)  # -> array de floats, un score par paire
-
-#     # On associe chaque score à son chunk d'origine, puis on trie
-#     scored = list(zip(candidates, scores))
-#     scored.sort(key=lambda x: x[1], reverse=True)
-
-#     return [{"chunk": c, "score": float(s)} for c, s in scored[:top_k]]
-
-
-# # --- Intégration dans ton pipeline existant ---
-# # 1. Retrieval large (garde ton BM25 + FAISS actuel, augmente juste N)
-# candidates = retrieve_top_n(query, n=30)  # union BM25 + FAISS, sans forcément RRF ici
-
-# # 2. Reranking par cross-encoder (l'étape qui juge vraiment la qualité)
-# final_chunks = rerank(query, candidates, top_k=5)
+        return [chunks_idxs[result["corpus_id"]] for result in results[:k]]
