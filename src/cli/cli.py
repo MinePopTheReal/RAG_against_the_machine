@@ -7,7 +7,8 @@ from src.message.success import SuccessMessage
 from src.models.models import MinimalSource
 from typing import Any
 
-class Flags():
+
+class Flags:
     @staticmethod
     def index(
         max_chunk_size: int = 2000,
@@ -17,7 +18,9 @@ class Flags():
         indexer = IndexingPipeline(max_chunk_size, chunk_overlap)
         indexer.browse_raw_for_chunking(repository_path)
         indexer.indexing()
-        print(SuccessMessage(f"Ingestion complete! Indexs saved under {DefaultPath.output}"))
+        print(SuccessMessage(
+            f"Ingestion complete! Indexs saved under {DefaultPath.output}"
+        ))
 
     @staticmethod
     def search(query: str, k: int = 5) -> list[MinimalSource]:
@@ -31,9 +34,12 @@ class Flags():
         dataset_path: str,
         save_directory: str,
         k: int = 5
-        ) -> None:
+    ) -> None:
         retriever = RetrieverPipeline(k)
-        save_file_path = retriever.retrieve_chunks_for_dataset(dataset_path, save_directory)
+        save_file_path = retriever.retrieve_chunks_for_dataset(
+            dataset_path,
+            save_directory
+        )
         print(SuccessMessage((
                 f"Saved student_search_results to {save_file_path}"
             )))
@@ -46,10 +52,16 @@ class Flags():
         return result
 
     @staticmethod
-    def answer_dataset(student_search_results_path: str, save_directory: str) -> None:
+    def answer_dataset(
+        student_search_results_path: str,
+        save_directory: str
+    ) -> None:
         answer_pipeline = AnswerPipeline()
 
-        answer_pipeline.answer_generating_for_dataset(student_search_results_path, save_directory)
+        answer_pipeline.answer_generating_for_dataset(
+            student_search_results_path,
+            save_directory
+        )
         print(SuccessMessage(
             "Saved student_search_results_and_answer to "
             f"{save_directory}"

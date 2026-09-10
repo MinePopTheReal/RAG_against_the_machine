@@ -1,7 +1,5 @@
-from src.models.models import MinimalSource
-from src.utils.default_path import DefaultPath
 from src.utils.file_manager import FileManager
-from json import loads
+from src.models.models import MinimalSource
 
 
 class Augmenting:
@@ -10,10 +8,12 @@ class Augmenting:
 
     def _load_chunk_from_minimal_source(self) -> list[str]:
         chunks: list[str] = []
-        
+
         for source in self.retrieved_sources:
             data = FileManager.read(source.file_path)
-            chunk = data[source.first_character_index:source.last_character_index]
+            chunk = data[
+                source.first_character_index:source.last_character_index
+            ]
             chunks.append(chunk)
 
         return chunks
@@ -42,8 +42,8 @@ class Augmenting:
             )
         source = ""
         for i, chunk in enumerate(chunks[:2]):
-            source += f"\n\n[Source {i}]:\n{chunk}" 
-        
+            source += f"\n\n[Source {i}]:\n{chunk}"
+
         return [
             {
                 "role": "system",

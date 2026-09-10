@@ -1,5 +1,6 @@
 from src.message.colors import TerminalColors as TC
 
+
 class SuccessMessage:
     """
     Represents a formatted success message.

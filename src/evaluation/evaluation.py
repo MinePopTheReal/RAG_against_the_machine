@@ -11,18 +11,28 @@ from typing import Any
 
 
 class Evaluation:
-    def __init__(self, student_search_results_path: str, dataset_path: str) -> None:
+    def __init__(
+        self,
+        student_search_results_path: str,
+        dataset_path: str
+    ) -> None:
         self.student_search_results_path = student_search_results_path
         self.dataset_path = dataset_path
 
     def _load_jsons(self) -> Any:
-        student_search_result = FileManager().load(self.student_search_results_path, StudentSearchResults)
+        student_search_result = FileManager().load(
+            self.student_search_results_path,
+            StudentSearchResults
+        )
         dataset = FileManager().load(self.dataset_path, RagDataset)
 
         return student_search_result, dataset
 
     @staticmethod
-    def iou_calcul(source: MinimalSource, dataset_source: MinimalSource) -> float:
+    def iou_calcul(
+        source: MinimalSource,
+        dataset_source: MinimalSource
+    ) -> float:
         first_index = max(
             source.first_character_index,
             dataset_source.first_character_index
@@ -50,12 +60,18 @@ class Evaluation:
             return -1
         return inter / union
 
-    def calculation(self, student_search_result: StudentSearchResults, dataset: RagDataset) -> list[float]:
+    def calculation(
+        self,
+        student_search_result: StudentSearchResults,
+        dataset: RagDataset
+    ) -> list[float]:
         search_results = student_search_result.search_results
         dataset_id_and_sources = {}
         for data in dataset.rag_questions:
             if not isinstance(data, AnsweredQuestion):
-                raise EvaluateError("You must give a dataset with AnsweredQuestion only")
+                raise EvaluateError(
+                    "You must give a dataset with AnsweredQuestion only"
+                )
             dataset_id_and_sources[data.question_id] = data.sources
 
         recalls = [1, 3, 5, 10]
@@ -69,7 +85,9 @@ class Evaluation:
 
                 find = False
                 for source in source_for_recall:
-                    dataset_sources = dataset_id_and_sources[search_result.question_id]
+                    dataset_sources = dataset_id_and_sources[
+                        search_result.question_id
+                    ]
                     for dataset_source in dataset_sources:
 
                         if source.file_path == dataset_source.file_path:

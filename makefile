@@ -21,5 +21,5 @@ clean:
 		find . -type d -name "__pycache__" -exec rm -rf {} +
 
 lint:
-		@$(UV) run flake8 */*.py
-		@$(UV) run mypy */*.py $(MYPY_FLAG)
+		@$(UV) run flake8 src/
+		@$(UV) run mypy src/ $(MYPY_FLAG)

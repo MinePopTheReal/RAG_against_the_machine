@@ -31,15 +31,21 @@ class RetrieverPipeline:
         self.minimal_source: list[MinimalSource] = [
             MinimalSource(**source)
             for source in loads(
-            FileManager.read(DefaultPath.minimal_source)
+                FileManager.read(DefaultPath.minimal_source)
             )
         ]
 
         self.bm25_retriever = BM25Retrieving(DefaultPath.bm25_index)
-        self.embedding_retriever = EmbeddingRetrieving(DefaultPath.semantic_index, self.device)
+        self.embedding_retriever = EmbeddingRetrieving(
+            DefaultPath.semantic_index,
+            self.device
+        )
         self.reranker = ReRank(self.device)
 
-    def load_batches(self, queries: list[str] | str) -> tuple[list[list[int]], list[list[int]]]:
+    def load_batches(
+        self,
+        queries: list[str] | str
+    ) -> tuple[list[list[int]], list[list[int]]]:
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,
@@ -51,11 +57,13 @@ class RetrieverPipeline:
             queries,
             self.k
         )
-        
+
         return (bm25_batches.result(), embedding_batches.result())
 
     @staticmethod
-    def _load_datasets(datasets_file_path: str) -> list[AnsweredQuestion | UnansweredQuestion]:
+    def _load_datasets(
+        datasets_file_path: str
+    ) -> list[AnsweredQuestion | UnansweredQuestion]:
         data = FileManager().load(datasets_file_path, RagDataset)
 
         return data.rag_questions
@@ -67,7 +75,11 @@ class RetrieverPipeline:
 
         return [self.minimal_source[idx] for idx in result]
 
-    def retrieve_chunks_for_dataset(self, dataset_path: str, save_directory: str) -> str:
+    def retrieve_chunks_for_dataset(
+        self,
+        dataset_path: str,
+        save_directory: str
+    ) -> str:
         datas = self._load_datasets(dataset_path)
         queries = [d.question for d in datas]
 
@@ -83,11 +95,18 @@ class RetrieverPipeline:
             ascii="·■"
         ):
             combined = list(set(bm25_idxs + emb_idxs))
-            reranked = self.reranker.re_ranking(data.question, combined, self.k)
+            reranked = self.reranker.re_ranking(
+                data.question,
+                combined,
+                self.k
+            )
             search_results.append(MinimalSearchResults(
                 question_id=data.question_id,
                 question=data.question,
-                retrieved_sources=[self.minimal_source[idx] for idx in reranked]
+                retrieved_sources=[
+                    self.minimal_source[idx]
+                    for idx in reranked
+                ]
             ))
 
         save_result = []
@@ -105,6 +124,12 @@ class RetrieverPipeline:
             )
 
         path_save_file = str(Path(save_directory) / Path(dataset_path).name)
-        FileManager.write({"search_results":save_result, "k":self.k}, path_save_file)
+        FileManager.write(
+            {
+                "search_results": save_result,
+                "k": self.k
+            },
+            path_save_file
+        )
 
         return (path_save_file)

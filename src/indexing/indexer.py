@@ -51,13 +51,16 @@ def get_model(
     model_name: str = "BAAI/bge-small-en-v1.5",
     quantized_file_name: str = "openvino_model_qint8_quantized.xml",
     export_path: str = "data/processed/bge-small-openvino"
-    ) -> Any:
+) -> Any:
 
     if device == "cpu":
         export_dir = Path(export_path)
         config_file = Path(export_dir / "openvino") / "config.json"
 
-        if not (Path(Path(export_dir) / f"openvino/{quantized_file_name}").exists() and config_file.exists()):
+        if not (
+            Path(Path(export_dir) / f"openvino/{quantized_file_name}").exists()
+            and config_file.exists()
+        ):
             base_model = SentenceTransformer(model_name, backend="openvino")
             base_model.save_pretrained(str(Path(export_dir) / "openvino"))
             export_static_quantized_openvino_model(

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 class DefaultPath:
     repo = "data/raw/"
 
@@ -13,8 +14,3 @@ class DefaultPath:
 
     bm25_index = str(Path(output) / "indexs/bm25")
     semantic_index = str(Path(output) / "indexs/faiss_index.index")
-
-
-
-
-

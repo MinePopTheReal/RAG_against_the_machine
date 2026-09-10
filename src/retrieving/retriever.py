@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from bm25s import BM25, tokenize
 from typing import Any
 
+
 class Retriver(ABC):
     def __init__(self, save_path: str):
         self.save_path: str = save_path
@@ -45,7 +46,7 @@ class EmbeddingRetrieving(Retriver):
     def __init__(self, save_path: str, device: str):
         super().__init__(save_path)
         self.model = get_model(device)
-        
+
     def _load(self) -> Index:
         semantic_index = read_index(str(self.save_path))
 

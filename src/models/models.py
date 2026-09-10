@@ -9,7 +9,7 @@ class MinimalSource(BaseModel):
 
 
 class UnansweredQuestion(BaseModel):
-    question_id: str = Field(default_factory=lambda:str(uuid4()))
+    question_id: str = Field(default_factory=lambda: str(uuid4()))
     question: str
 
 
@@ -24,7 +24,7 @@ class RagDataset(BaseModel):
 
 class MinimalSearchResults(BaseModel):
     question_id: str
-    question: str   
+    question: str
     retrieved_sources: list[MinimalSource]
 
 

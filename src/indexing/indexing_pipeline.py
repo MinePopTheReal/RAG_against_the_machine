@@ -8,15 +8,16 @@ from pathlib import Path
 from tqdm import tqdm
 from torch import cuda
 
+
 class IndexingPipeline:
     def __init__(
-        self, 
-        chunk_size: int, 
-        chunk_overlap: int, 
+        self,
+        chunk_size: int,
+        chunk_overlap: int,
     ):
         self.chunk_size: int = chunk_size
         self.chunk_overlap: int = chunk_overlap
-        
+
         self.chunker = Chunker(self.chunk_size, self.chunk_overlap)
 
         self.chunks: list[MinimalSource] = []
@@ -30,7 +31,7 @@ class IndexingPipeline:
         valid_extensions = {"py", "txt", "md"}
 
         if not listdir(root_path_of_data):
-            raise(IndexingError("The repository you specified is empty."))
+            raise IndexingError("The repository you specified is empty.")
 
         for current_path, _, files in tqdm(
             list(walk(root_path_of_data)),
