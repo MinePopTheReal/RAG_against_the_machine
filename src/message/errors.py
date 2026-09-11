@@ -26,9 +26,6 @@ class Error(Exception):
             f"{' (' + self.type + ')' if self.type else ''}"
         )
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
 class PydanticError(Error):
     def __init__(
         self, 
@@ -43,10 +40,7 @@ class PydanticError(Error):
 
         super().__init__(formatted_message, type_error.default_type)
 
->>>>>>> Stashed changes
-=======
 
->>>>>>> master
 class CliError(Error):
     """Exception raised by the command line interface."""
 

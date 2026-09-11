@@ -10,16 +10,8 @@ class MinimalSource(BaseModel):
 
 
 class UnansweredQuestion(BaseModel):
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    question_id: str = Field(default_factory=lambda:str(uuid4()))
-=======
     model_config = ConfigDict(extra="forbid")
     question_id: str = Field(default_factory=lambda: str(uuid4()))
->>>>>>> Stashed changes
-=======
-    question_id: str = Field(default_factory=lambda: str(uuid4()))
->>>>>>> master
     question: str
 
 

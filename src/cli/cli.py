@@ -5,9 +5,6 @@ from src.evaluation.evaluation import Evaluation
 from src.utils.default_path import DefaultPath
 from src.message.success import SuccessMessage
 from src.models.models import MinimalSource
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
 from pydantic import ValidationError
 from src.models.check_input import (
     CheckIndex,
@@ -25,10 +22,7 @@ from src.message.errors import (
     PydanticError
 )
 from typing import Any, Literal
->>>>>>> Stashed changes
-=======
 from typing import Any
->>>>>>> master
 
 
 class Flags:
@@ -78,7 +72,6 @@ class Flags:
     def search_dataset(
         dataset_path: str,
         save_directory: str,
-<<<<<<< HEAD
         k: int = 5,
     ) -> None:
         try:
@@ -93,47 +86,23 @@ class Flags:
         save_file_path = retriever.retrieve_chunks_for_dataset(
             valid_input.dataset_path,
             valid_input.save_directory
-=======
-        k: int = 5
-    ) -> None:
-        retriever = RetrieverPipeline(k)
-        save_file_path = retriever.retrieve_chunks_for_dataset(
-            dataset_path,
-            save_directory
->>>>>>> master
         )
         print(SuccessMessage((
                 f"Saved student_search_results to {save_file_path}"
             )))
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    def answer(self, query: str, k: int) -> str:
-=======
-    def answer(self, query: str, k: int) -> Any:
->>>>>>> master
-        retrieved_source = self.search(query, k)
-=======
     def answer(self, query: str, k: int) -> Any:
         try:
             valid_input = CheckAnswer(query=query, k=k)
         except ValidationError as e:
             raise PydanticError("Bad input", e, AnswerError)
         retrieved_source = self.search(valid_input.query, valid_input.k)
->>>>>>> Stashed changes
 
         answer = AnswerPipeline()
         result = answer.answer_generating_for_query(query, retrieved_source)
         return result
 
     @staticmethod
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    def answer_dataset(student_search_results_path: str, save_directory: str) -> None:
-        answer_pipeline = AnswerPipeline()
-
-        answer_pipeline.answer_generating_for_dataset(student_search_results_path, save_directory)
-=======
     def answer_dataset(
         student_search_results_path: str,
         save_directory: str
@@ -151,8 +120,7 @@ class Flags:
             valid_input.student_search_results_path,
             valid_input.save_directory
         )
->>>>>>> Stashed changes
-=======
+
     def answer_dataset(
         student_search_results_path: str,
         save_directory: str
@@ -163,7 +131,6 @@ class Flags:
             student_search_results_path,
             save_directory
         )
->>>>>>> master
         print(SuccessMessage(
             "Saved student_search_results_and_answer to "
             f"{save_directory}"

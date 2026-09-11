@@ -31,7 +31,7 @@ class ModeModel(BaseModel):
         return self.mode
 
     def load_mode(self):
-        self.mode = FileManager.load(DefaultPath.metadata, ModeModel)
+        self.mode = FileManager().load(DefaultPath.metadata, ModeModel)
 
     def save_mode(self):
         FileManager.write({"mode": self.get_mode}, DefaultPath.metadata)

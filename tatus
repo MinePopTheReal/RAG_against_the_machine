@@ -1,0 +1,4 @@
+warning: ignoring broken ref refs/remotes/git/develop
+* [32mdevelop           [m edf5ba1 [[34mgit/develop[m: gone] push current work
+  master            [m a3150b1 fix norm (flake8)
+  [31mremotes/git/master[m a3150b1 fix norm (flake8)

@@ -48,15 +48,7 @@ class IndexerBm25(Indexer):
 
 
 def get_model(
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    device,
-=======
     device: ModeModel,
->>>>>>> Stashed changes
-=======
-    device: str,
->>>>>>> master
     model_name: str = "BAAI/bge-small-en-v1.5",
     quantized_file_name: str = "openvino_model_qint8_quantized.xml",
     export_path: str = "data/processed/bge-small-openvino"
@@ -92,15 +84,7 @@ def get_model(
 class IndexerSemanticEmbedding(Indexer):
     def __init__(
         self,
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-        device,
-=======
         device: ModeModel,
->>>>>>> Stashed changes
-=======
-        device: str,
->>>>>>> master
         save_path: str = DefaultPath.semantic_index,
     ):
         self.device = device
