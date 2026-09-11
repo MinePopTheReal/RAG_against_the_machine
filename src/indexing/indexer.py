@@ -9,6 +9,7 @@ from bm25s import tokenize, BM25
 from typing import Any
 from pathlib import Path
 import transformers
+from src.models.check_input import ModeModel
 
 transformers.logging.disable_progress_bar()
 
@@ -46,13 +47,17 @@ class IndexerBm25(Indexer):
 
 
 def get_model(
+<<<<<<< Updated upstream
     device,
+=======
+    device: ModeModel,
+>>>>>>> Stashed changes
     model_name: str = "BAAI/bge-small-en-v1.5",
     quantized_file_name: str = "openvino_model_qint8_quantized.xml",
     export_path: str = "data/processed/bge-small-openvino"
     ) -> Any:
 
-    if device == "cpu":
+    if device.get_mode == "cpu":
         export_dir = Path(export_path)
         config_file = Path(export_dir / "openvino") / "config.json"
 
@@ -73,22 +78,26 @@ def get_model(
             model_kwargs={"file_name": quantized_file_name},
         )
     else:
-        return SentenceTransformer("BAAI/bge-small-en-v1.5", device=device)
+        return SentenceTransformer("BAAI/bge-small-en-v1.5", device="cuda")
 
 
 class IndexerSemanticEmbedding(Indexer):
     def __init__(
         self,
+<<<<<<< Updated upstream
         device,
+=======
+        device: ModeModel,
+>>>>>>> Stashed changes
         save_path: str = DefaultPath.semantic_index,
     ):
         self.device = device
         super().__init__(save_path)
 
     def _create_index(self, corpus: list[str]) -> IndexFlatIP:
-        batch_size = 4 if self.device == "cpu" else 256
+        batch_size = 4 if self.device.get_mode == "cpu" else 256
 
-        model = get_model(self.device)
+        model = get_model(device=self.device)
 
         vector = model.encode(
             corpus,

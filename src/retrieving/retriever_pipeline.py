@@ -1,8 +1,12 @@
 from src.retrieving.retriever import BM25Retrieving, EmbeddingRetrieving
+from src.message.errors import PydanticError, RetrievingError
 from concurrent.futures import ThreadPoolExecutor
 from src.utils.default_path import DefaultPath
 from src.utils.file_manager import FileManager
+from src.models.check_input import ModeModel
 from src.retrieving.re_rank import ReRank
+from logging import getLogger, ERROR
+from pydantic import ValidationError
 from src.models.models import (
     MinimalSearchResults,
     MinimalSource,
@@ -11,11 +15,8 @@ from src.models.models import (
     UnansweredQuestion
 )
 from pathlib import Path
-from torch import cuda
 from json import loads
 from tqdm import tqdm
-from logging import getLogger, ERROR
-
 
 getLogger("huggingface_hub").setLevel(ERROR)
 
@@ -24,29 +25,47 @@ class RetrieverPipeline:
     def __init__(self, k: int) -> None:
         self.k = k
 
-        self.device = "cuda" if cuda.is_available() else "cpu"
+        self.device = ModeModel()
+        self.device.load_mode()
 
         self._executor = ThreadPoolExecutor(max_workers=2)
 
-        self.minimal_source: list[MinimalSource] = loads(FileManager.read(DefaultPath.minimal_source))
+        try:
+            self.minimal_source: list[MinimalSource] = [
+                MinimalSource(**source)
+                for source in loads(
+                    FileManager.read(DefaultPath.minimal_source)
+                )
+            ]
+        except ValidationError as e:
+            raise PydanticError("Invalid file content", e, RetrievingError) 
+
         self.bm25_retriever = BM25Retrieving(DefaultPath.bm25_index)
-        self.embedding_retriever = EmbeddingRetrieving(DefaultPath.semantic_index, self.device)
-        self.reranker = ReRank(self.device)
+
+        if self.device.can_embed:
+            self.embedding_retriever = EmbeddingRetrieving(
+                DefaultPath.semantic_index,
+                self.device
+            )
+            self.reranker = ReRank(self.device)
 
     def load_batches(self, queries):
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,
             self.k
-        )
+        ).result()
 
-        embedding_batches = self._executor.submit(
-            self.embedding_retriever._retrieving,
-            queries,
-            self.k
-        )
-        
-        return (bm25_batches.result(), embedding_batches.result())
+        if self.device.can_embed:
+            embedding_batches = self._executor.submit(
+                self.embedding_retriever._retrieving,
+                queries,
+                self.k
+            ).result()
+        else:
+            embedding_batches = None
+
+        return (bm25_batches, embedding_batches)
 
     @staticmethod
     def _load_datasets(datasets_file_path: str) -> list[AnsweredQuestion | UnansweredQuestion]:
@@ -56,33 +75,60 @@ class RetrieverPipeline:
 
     def retrieve_chunks_for_query(self, query: str) -> list[MinimalSource]:
         bm25_batches, embedding_batches = self.load_batches(query)
-        combined = list(set(bm25_batches[0] + embedding_batches[0]))
-        result = self.reranker.re_ranking(query, combined, self.k)
+
+        if self.device.can_embed:
+            combined = list(set(bm25_batches[0] + embedding_batches[0]))
+            result = self.reranker.re_ranking(query, combined, self.k)
+        else:
+            result = bm25_batches
 
         return [MinimalSource(**self.minimal_source[idx]) for idx in result]
 
-    def retrieve_chunks_for_dataset(self, dataset_path: str, save_directory: str) -> str:
+
+    def retrieve_chunks_for_dataset(
+        self,
+        dataset_path: str,
+        save_directory: str
+    ) -> str:
         datas = self._load_datasets(dataset_path)
         queries = [d.question for d in datas]
 
         bm25_batches, embedding_batches = self.load_batches(queries)
 
         search_results = []
-        for data, bm25_idxs, emb_idxs in tqdm(
-            zip(datas, bm25_batches, embedding_batches),
-            total=len(datas),
-            desc=f"{"Retriving":<15.15}",
-            colour="cyan",
-            unit="queries",
-            ascii="·■"
-        ):
-            combined = list(set(bm25_idxs + emb_idxs))
-            reranked = self.reranker.re_ranking(data.question, combined, self.k)
-            search_results.append(MinimalSearchResults(
-                question_id=data.question_id,
-                question=data.question,
-                retrieved_sources=[self.minimal_source[idx] for idx in reranked],
-            ))
+        if not self.device.can_embed:
+            for data, bm25_idx in zip(datas, bm25_batches):
+                search_results.append(MinimalSearchResults(
+                    question_id=data.question_id,
+                    question=data.question,
+                    retrieved_sources=[
+                        self.minimal_source[idx]
+                        for idx in bm25_idx
+                    ]
+                ))
+        else:
+            for data, bm25_idxs, emb_idxs in tqdm(
+                zip(datas, bm25_batches, embedding_batches),
+                total=len(datas),
+                desc=f"{"Retriving":<15.15}",
+                colour="cyan",
+                unit="queries",
+                ascii="·■"
+            ):
+                combined = list(set(bm25_idxs + emb_idxs))
+                reranked = self.reranker.re_ranking(
+                    data.question,
+                    combined,
+                    self.k
+                )
+                search_results.append(MinimalSearchResults(
+                    question_id=data.question_id,
+                    question=data.question,
+                    retrieved_sources=[
+                        self.minimal_source[idx]
+                        for idx in reranked
+                    ]
+                ))
 
         save_result = []
         for result in search_results:

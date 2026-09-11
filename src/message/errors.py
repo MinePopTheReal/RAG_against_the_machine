@@ -11,11 +11,9 @@ class Error(Exception):
         self,
         message: str = "",
         type: str | None = None,
-        tutorial_message: str = ""
     ) -> None:
         self.message: str = message
         self.type: str = type or self.default_type
-        self.tutorial: str = tutorial_message
 
         super().__init__(message)
 
@@ -26,9 +24,25 @@ class Error(Exception):
         return (
             f"{TC.BOLD}{TC.RED}[Error]{TC.END}: {self.message}"
             f"{' (' + self.type + ')' if self.type else ''}"
-            f"\n {self.tutorial}"
         )
 
+<<<<<<< Updated upstream
+=======
+class PydanticError(Error):
+    def __init__(
+        self, 
+        message,
+        error, 
+        type_error: type[Error] = Error
+    ):
+        formatted_message = "\n".join(
+            f"{message}: {err['msg']}"
+            for err in error.errors()
+            )
+
+        super().__init__(formatted_message, type_error.default_type)
+
+>>>>>>> Stashed changes
 class CliError(Error):
     """Exception raised by the command line interface."""
 

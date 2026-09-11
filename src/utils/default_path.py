@@ -15,6 +15,4 @@ class DefaultPath:
     semantic_index = str(Path(output) / "indexs/faiss_index.index")
 
 
-
-
-
+    metadata = str(Path(output) / "metadata.json")
