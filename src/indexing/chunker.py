@@ -1,10 +1,10 @@
+from src.utils.default_path import DefaultPath
+from src.utils.file_manager import FileManager
 from langchain_core.documents import Document
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     Language
 )
-from src.utils.default_path import DefaultPath
-from src.utils.file_manager import FileManager
 from src.models.models import MinimalSource
 
 
@@ -45,7 +45,11 @@ class Chunker:
         self.chunk_size: int = chunk_size
         self.chunk_overlap: int = chunk_overlap
 
-    def _code_chunker(self, file_data: str, language: Language) -> list[Document]:
+    def _code_chunker(
+        self,
+        file_data: str,
+        language: Language
+    ) -> list[Document]:
         code_splitter = RecursiveCharacterTextSplitter.from_language(
             language=language,
             chunk_size=self.chunk_size,
@@ -61,7 +65,12 @@ class Chunker:
         text_data = text_splitter.create_documents([file_data])
         return text_data
 
-    def _save_chunks(self, chunks: list[Document], file_data: str, file_path: str) -> tuple[list[MinimalSource], list[str]]:
+    def _save_chunks(
+        self,
+        chunks: list[Document],
+        file_data: str,
+        file_path: str
+    ) -> tuple[list[MinimalSource], list[str]]:
         final_chunks: list[MinimalSource] = []
         texts: list[str] = []
 
@@ -80,13 +89,22 @@ class Chunker:
         return final_chunks, texts
 
     @staticmethod
-    def _find_indexs(file_data: str, chunk: Document, start_index: int) -> tuple[int, int]:
+    def _find_indexs(
+        file_data: str,
+        chunk: Document,
+        start_index: int
+    ) -> tuple[int, int]:
         end_index = -1
         start_index = file_data.find(chunk.page_content, start_index)
         end_index = start_index + len(chunk.page_content)
         return start_index, end_index
 
-    def chunker(self, file_data: str, file_path: str, extension_name: str | None) -> tuple[list[MinimalSource], list[str]]:
+    def chunker(
+        self,
+        file_data: str,
+        file_path: str,
+        extension_name: str | None
+    ) -> tuple[list[MinimalSource], list[str]]:
         if extension_name in FILE_EXTENSION:
             chunks = self._code_chunker(
                 file_data,

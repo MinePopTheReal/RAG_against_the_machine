@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 class DefaultPath:
     repo = "data/raw/"
 

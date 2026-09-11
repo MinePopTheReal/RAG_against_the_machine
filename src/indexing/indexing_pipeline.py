@@ -9,8 +9,10 @@ from tqdm import tqdm
 <<<<<<< Updated upstream
 from torch import cuda
 
+
 class IndexingPipeline:
     def __init__(
+<<<<<<< HEAD
         self, 
         chunk_size: int, 
         chunk_overlap: int, 
@@ -24,11 +26,16 @@ class IndexingPipeline:
         chunk_overlap: int,
         device: ModeModel
 >>>>>>> Stashed changes
+=======
+        self,
+        chunk_size: int,
+        chunk_overlap: int,
+>>>>>>> master
     ):
         self.device = device
         self.chunk_size: int = chunk_size
         self.chunk_overlap: int = chunk_overlap
-        
+
         self.chunker = Chunker(self.chunk_size, self.chunk_overlap)
 
         self.chunks: list[MinimalSource] = []
@@ -42,6 +49,7 @@ class IndexingPipeline:
 
 <<<<<<< Updated upstream
         if not listdir(root_path_of_data):
+<<<<<<< HEAD
             raise(IndexingError("The repository you specified is empty."))
 =======
         try:
@@ -50,6 +58,9 @@ class IndexingPipeline:
         except (FileNotFoundError, NotADirectoryError, PermissionError) as e:
             raise IndexingError(e) from e
 >>>>>>> Stashed changes
+=======
+            raise IndexingError("The repository you specified is empty.")
+>>>>>>> master
 
         for current_path, _, files in tqdm(
             list(walk(root_path_of_data)),

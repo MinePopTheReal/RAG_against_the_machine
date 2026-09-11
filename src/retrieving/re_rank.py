@@ -8,6 +8,7 @@ from src.models.check_input import ModeModel
 
 transformers.logging.set_verbosity_error()
 
+
 class ReRank:
     def __init__(self, device: ModeModel) -> None:
         self.device = device
@@ -17,11 +18,16 @@ class ReRank:
         )
         self.corpus: list[str] = self._load_corpus()
 
-    def _load_corpus(self) -> list[str] | Any:
+    def _load_corpus(self) -> Any:
         corpus = FileManager.read(DefaultPath.chunked_source)
         return loads(corpus)
 
-    def re_ranking(self, queries: str, chunks_idxs: list[int], k: int) -> list[int]:
+    def re_ranking(
+        self,
+        queries: str,
+        chunks_idxs: list[int],
+        k: int
+    ) -> list[int]:
         chunks_idxs = list(set(chunks_idxs))
         chunks = [self.corpus[idx] for idx in chunks_idxs]
 
@@ -45,4 +51,17 @@ class ReRank:
 
             ranked_idxs.append(chunks_idxs[corpus_id])
 
-        return [chunks_idxs[result["corpus_id"]] for result in results[:k]]
+        ranked_idxs: list[int] = []
+
+        for result in results[:k]:
+            corpus_id = result["corpus_id"]
+
+            if not isinstance(corpus_id, int):
+                raise TypeError(
+                    "Expected corpus_id to be int, got",
+                    f"{type(corpus_id).__name__}"
+                )
+
+            ranked_idxs.append(chunks_idxs[corpus_id])
+
+        return ranked_idxs

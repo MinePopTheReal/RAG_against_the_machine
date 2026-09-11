@@ -1,5 +1,6 @@
 from src.message.colors import TerminalColors as TC
 
+
 class WarningMessage:
     """
     Represents a formatted warning message.

@@ -7,10 +7,10 @@ from typing import Any
 
 
 class FileManager:
-    T = TypeVar('T' ,bound=BaseModel)
+    T = TypeVar('T', bound=BaseModel)
 
     def load(self, file_path: str, return_type: type[T]) -> T:
-        
+
         data = self.read(file_path)
         try:
             load_data = loads(data)
@@ -50,7 +50,6 @@ class FileManager:
                 f"Unable to read file: {file_path}"
             ) from e
 
-
     @staticmethod
     def write(obj: Any, file_path: str) -> None:
         try:
@@ -77,16 +76,15 @@ class FileManager:
 
         except UnicodeEncodeError as e:
             raise Error(
-                f"Error when encode"
+                "Error when encode"
             ) from e
 
         except TypeError as e:
             raise Error(
-                f"Object is not JSON serializable"
+                "Object is not JSON serializable"
             ) from e
 
         except OSError as e:
             raise Error(
                 f"Unable to write file: {file_path}"
             ) from e
-

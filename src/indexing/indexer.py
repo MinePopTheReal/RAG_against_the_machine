@@ -11,6 +11,7 @@ from pathlib import Path
 import transformers
 from src.models.check_input import ModeModel
 
+
 transformers.logging.disable_progress_bar()
 
 
@@ -47,21 +48,28 @@ class IndexerBm25(Indexer):
 
 
 def get_model(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     device,
 =======
     device: ModeModel,
 >>>>>>> Stashed changes
+=======
+    device: str,
+>>>>>>> master
     model_name: str = "BAAI/bge-small-en-v1.5",
     quantized_file_name: str = "openvino_model_qint8_quantized.xml",
     export_path: str = "data/processed/bge-small-openvino"
-    ) -> Any:
+) -> Any:
 
     if device.get_mode == "cpu":
         export_dir = Path(export_path)
         config_file = Path(export_dir / "openvino") / "config.json"
 
-        if not (Path(Path(export_dir) / f"openvino/{quantized_file_name}").exists() and config_file.exists()):
+        if not (
+            Path(Path(export_dir) / f"openvino/{quantized_file_name}").exists()
+            and config_file.exists()
+        ):
             base_model = SentenceTransformer(model_name, backend="openvino")
             base_model.save_pretrained(str(Path(export_dir) / "openvino"))
             export_static_quantized_openvino_model(
@@ -84,11 +92,15 @@ def get_model(
 class IndexerSemanticEmbedding(Indexer):
     def __init__(
         self,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         device,
 =======
         device: ModeModel,
 >>>>>>> Stashed changes
+=======
+        device: str,
+>>>>>>> master
         save_path: str = DefaultPath.semantic_index,
     ):
         self.device = device

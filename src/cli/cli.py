@@ -5,6 +5,7 @@ from src.evaluation.evaluation import Evaluation
 from src.utils.default_path import DefaultPath
 from src.message.success import SuccessMessage
 from src.models.models import MinimalSource
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
 from pydantic import ValidationError
@@ -25,9 +26,12 @@ from src.message.errors import (
 )
 from typing import Any, Literal
 >>>>>>> Stashed changes
+=======
+from typing import Any
+>>>>>>> master
 
 
-class Flags():
+class Flags:
     @staticmethod
     def index(
         max_chunk_size: int = 2000,
@@ -52,7 +56,9 @@ class Flags():
         )
         indexer.browse_raw_for_chunking(valid_input.repository_path)
         indexer.indexing()
-        print(SuccessMessage(f"Ingestion complete! Indexs saved under {DefaultPath.output}"))
+        print(SuccessMessage(
+            f"Ingestion complete! Indexs saved under {DefaultPath.output}"
+        ))
 
     @staticmethod
     def search(
@@ -72,6 +78,7 @@ class Flags():
     def search_dataset(
         dataset_path: str,
         save_directory: str,
+<<<<<<< HEAD
         k: int = 5,
     ) -> None:
         try:
@@ -86,13 +93,25 @@ class Flags():
         save_file_path = retriever.retrieve_chunks_for_dataset(
             valid_input.dataset_path,
             valid_input.save_directory
+=======
+        k: int = 5
+    ) -> None:
+        retriever = RetrieverPipeline(k)
+        save_file_path = retriever.retrieve_chunks_for_dataset(
+            dataset_path,
+            save_directory
+>>>>>>> master
         )
         print(SuccessMessage((
                 f"Saved student_search_results to {save_file_path}"
             )))
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     def answer(self, query: str, k: int) -> str:
+=======
+    def answer(self, query: str, k: int) -> Any:
+>>>>>>> master
         retrieved_source = self.search(query, k)
 =======
     def answer(self, query: str, k: int) -> Any:
@@ -108,6 +127,7 @@ class Flags():
         return result
 
     @staticmethod
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     def answer_dataset(student_search_results_path: str, save_directory: str) -> None:
         answer_pipeline = AnswerPipeline()
@@ -132,6 +152,18 @@ class Flags():
             valid_input.save_directory
         )
 >>>>>>> Stashed changes
+=======
+    def answer_dataset(
+        student_search_results_path: str,
+        save_directory: str
+    ) -> None:
+        answer_pipeline = AnswerPipeline()
+
+        answer_pipeline.answer_generating_for_dataset(
+            student_search_results_path,
+            save_directory
+        )
+>>>>>>> master
         print(SuccessMessage(
             "Saved student_search_results_and_answer to "
             f"{save_directory}"

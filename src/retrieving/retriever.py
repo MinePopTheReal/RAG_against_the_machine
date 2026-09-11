@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from bm25s import BM25, tokenize
 from typing import Any
 
+
 class Retriver(ABC):
     def __init__(self, save_path: str):
         self.save_path: str = save_path
@@ -26,7 +27,7 @@ class BM25Retrieving(Retriver):
 
         return retriever
 
-    def _retrieving(self, queries: list[str], k: int) -> list[list[int]]:
+    def _retrieving(self, queries: list[str] | str, k: int) -> list[list[int]]:
         queries_tokens = tokenize(queries)
 
         docs, scores = self.retriever.retrieve(queries_tokens, k=k)
@@ -42,16 +43,16 @@ class BM25Retrieving(Retriver):
 
 
 class EmbeddingRetrieving(Retriver):
-    def __init__(self, save_path: str, device):
+    def __init__(self, save_path: str, device: str):
         super().__init__(save_path)
         self.model = get_model(device)
-        
+
     def _load(self) -> Index:
         semantic_index = read_index(str(self.save_path))
 
         return semantic_index
 
-    def _retrieving(self, queries: list[str], k: int) -> list[list[int]]:
+    def _retrieving(self, queries: list[str] | str, k: int) -> list[list[int]]:
         if isinstance(queries, str):
             queries = [queries]
         queries_vector = self.model.encode(queries, normalize_embeddings=True)

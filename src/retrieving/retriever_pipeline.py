@@ -49,7 +49,10 @@ class RetrieverPipeline:
             )
             self.reranker = ReRank(self.device)
 
-    def load_batches(self, queries):
+    def load_batches(
+        self,
+        queries: list[str] | str
+    ) -> tuple[list[list[int]], list[list[int]]]:
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,
@@ -68,7 +71,9 @@ class RetrieverPipeline:
         return (bm25_batches, embedding_batches)
 
     @staticmethod
-    def _load_datasets(datasets_file_path: str) -> list[AnsweredQuestion | UnansweredQuestion]:
+    def _load_datasets(
+        datasets_file_path: str
+    ) -> list[AnsweredQuestion | UnansweredQuestion]:
         data = FileManager().load(datasets_file_path, RagDataset)
 
         return data.rag_questions
@@ -82,7 +87,7 @@ class RetrieverPipeline:
         else:
             result = bm25_batches
 
-        return [MinimalSource(**self.minimal_source[idx]) for idx in result]
+        return [self.minimal_source[idx] for idx in result]
 
 
     def retrieve_chunks_for_dataset(
@@ -145,6 +150,12 @@ class RetrieverPipeline:
             )
 
         path_save_file = str(Path(save_directory) / Path(dataset_path).name)
-        FileManager.write({"search_results":save_result, "k":self.k}, path_save_file)
+        FileManager.write(
+            {
+                "search_results": save_result,
+                "k": self.k
+            },
+            path_save_file
+        )
 
         return (path_save_file)

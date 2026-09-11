@@ -1,18 +1,24 @@
-from ollama import chat, _types
-from src.answer.augmenting import Augmenting
-from json import loads
+from src.models.models import (
+    MinimalAnswer,
+    MinimalSource,
+    StudentSearchResults
+    )
 from src.utils.file_manager import FileManager
-from src.models.models import MinimalAnswer, MinimalSource, StudentSearchResults
+from src.answer.augmenting import Augmenting
 from src.message.errors import AnswerError
 from httpx import RemoteProtocolError
-from tqdm import tqdm
+from ollama import chat, _types
 from typing import Any
+from tqdm import tqdm
 
 
 class AnswerPipeline:
 
     @staticmethod
-    def answer_generating_for_query(query:str, retrieved_sources: list[MinimalSource]) -> Any:
+    def answer_generating_for_query(
+        query: str,
+        retrieved_sources: list[MinimalSource]
+    ) -> Any:
         model: str = "qwen3:0.6b"
 
         context = Augmenting(retrieved_sources).create_contexte(query)
@@ -45,17 +51,24 @@ class AnswerPipeline:
             )
         return response["message"]["content"]
 
-    def answer_generating_for_dataset(self, student_search_results_path: str, save_directory: str) -> None:
-        datas: StudentSearchResults = FileManager().load(student_search_results_path, StudentSearchResults)
+    def answer_generating_for_dataset(
+        self,
+        student_search_results_path: str,
+        save_directory: str
+    ) -> None:
+        datas: StudentSearchResults = FileManager().load(
+            student_search_results_path,
+            StudentSearchResults
+        )
         responses: list[MinimalAnswer] = []
 
         for data in tqdm(
-                datas.search_results,
-                desc=f"{"Answer":<15.15}",
-                colour="cyan",
-                unit="query",
-                ascii="·■"
-            ):
+            datas.search_results,
+            desc=f"{"Answer":<15.15}",
+            colour="cyan",
+            unit="query",
+            ascii="·■"
+        ):
 
             sources = data.retrieved_sources
 
@@ -69,4 +82,7 @@ class AnswerPipeline:
                 )
             ))
 
-        FileManager.write([response.model_dump(mode="python") for response in responses], save_directory)
+        FileManager.write(
+            [response.model_dump(mode="python") for response in responses],
+            save_directory
+        )
