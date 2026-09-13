@@ -24,14 +24,14 @@ class ModeModel(BaseModel):
 
     @property
     def can_embed(self):
-        return True if self.mode != "bm25-only" else False
+        return False if self.get_mode == "bm25-only" else True
 
     @property
     def get_mode(self):
         return self.mode
 
     def load_mode(self):
-        self.mode = FileManager().load(DefaultPath.metadata, ModeModel)
+        self.mode = FileManager().load(DefaultPath.metadata, ModeModel).mode
 
     def save_mode(self):
         FileManager.write({"mode": self.get_mode}, DefaultPath.metadata)
