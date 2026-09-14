@@ -43,6 +43,7 @@ class Flags:
             )
         except ValidationError as e:
             raise PydanticError("Bad input", e, IndexingError)
+        valid_input.mode.save_mode()
         indexer = IndexingPipeline(
             valid_input.max_chunk_size, 
             valid_input.chunk_overlap, 
@@ -119,22 +120,6 @@ class Flags:
         answer_pipeline.answer_generating_for_dataset(
             valid_input.student_search_results_path,
             valid_input.save_directory
-        )
-
-    def answer_dataset(
-        student_search_results_path: str,
-        save_directory: str
-    ) -> None:
-        answer_pipeline = AnswerPipeline()
-
-        answer_pipeline.answer_generating_for_dataset(
-            student_search_results_path,
-            save_directory
-        )
-        print(SuccessMessage(
-            "Saved student_search_results_and_answer to "
-            f"{save_directory}"
-            )
         )
 
     @staticmethod

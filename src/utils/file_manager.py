@@ -17,8 +17,8 @@ class FileManager:
             result = return_type(**load_data)
         except ValueError as e:
             raise Error(
-                "The file you tried to open is not a"
-                "valid file of the type you specified."
+                "The file you tried to open is not a "
+                f"valid file of the type you specified:"
             ) from e
         return result
 

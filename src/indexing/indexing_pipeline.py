@@ -82,4 +82,3 @@ class IndexingPipeline:
                 DefaultPath.semantic_index
                 )
             indexer_semanctic.create_and_save_index(self.corpus)
-        self.device.save_mode()

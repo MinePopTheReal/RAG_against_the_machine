@@ -13,7 +13,6 @@ from tqdm import tqdm
 
 
 class AnswerPipeline:
-
     @staticmethod
     def answer_generating_for_query(
         query: str,

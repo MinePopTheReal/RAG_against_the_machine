@@ -10,19 +10,19 @@ class MinimalSource(BaseModel):
 
 
 class UnansweredQuestion(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     question_id: str = Field(default_factory=lambda: str(uuid4()))
     question: str
 
 
 class AnsweredQuestion(UnansweredQuestion):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     sources: list[MinimalSource]
     answer: str
 
 
 class RagDataset(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     rag_questions: list[AnsweredQuestion | UnansweredQuestion]
 
 
