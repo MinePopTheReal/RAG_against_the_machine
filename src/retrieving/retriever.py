@@ -4,6 +4,7 @@ from faiss import read_index, Index
 from abc import ABC, abstractmethod
 from bm25s import BM25, tokenize
 from typing import Any
+from src.models.check_input import ModeModel
 
 
 class Retriver(ABC):
@@ -43,7 +44,7 @@ class BM25Retrieving(Retriver):
 
 
 class EmbeddingRetrieving(Retriver):
-    def __init__(self, save_path: str, device: str):
+    def __init__(self, save_path: str, device: ModeModel) -> None:
         super().__init__(save_path)
         self.model = get_model(device)
 

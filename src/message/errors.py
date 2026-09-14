@@ -1,4 +1,5 @@
 from src.message.colors import TerminalColors as TC
+from typing import Any
 
 
 class Error(Exception):
@@ -26,13 +27,14 @@ class Error(Exception):
             f"{' (' + self.type + ')' if self.type else ''}"
         )
 
+
 class PydanticError(Error):
     def __init__(
-        self, 
-        message,
-        error, 
+        self,
+        message: str,
+        error: Any,
         type_error: type[Error] = Error
-    ):
+    ) -> None:
         formatted_message = "\n".join(
             f"{message}: {err['msg']}"
             for err in error.errors()

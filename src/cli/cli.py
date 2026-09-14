@@ -12,7 +12,8 @@ from src.models.check_input import (
     CheckSearchDataset,
     CheckAnswer,
     CheckAnswerDataset,
-    CheckEvaluate
+    CheckEvaluate,
+    ModeModel
 )
 from src.message.errors import (
     IndexingError,
@@ -22,7 +23,6 @@ from src.message.errors import (
     PydanticError
 )
 from typing import Any, Literal
-from typing import Any
 
 
 class Flags:
@@ -39,14 +39,14 @@ class Flags:
                 max_chunk_size=max_chunk_size,
                 repository_path=repository_path,
                 chunk_overlap=chunk_overlap,
-                mode=mode
+                mode=ModeModel(mode=mode)
             )
         except ValidationError as e:
             raise PydanticError("Bad input", e, IndexingError)
         valid_input.mode.save_mode()
         indexer = IndexingPipeline(
-            valid_input.max_chunk_size, 
-            valid_input.chunk_overlap, 
+            valid_input.max_chunk_size,
+            valid_input.chunk_overlap,
             valid_input.mode
         )
         indexer.browse_raw_for_chunking(valid_input.repository_path)
@@ -57,15 +57,17 @@ class Flags:
 
     @staticmethod
     def search(
-        query: str, 
-        k: int = 5, 
+        query: str,
+        k: int = 5,
     ) -> list[MinimalSource]:
         try:
             valid_input = CheckSearch(query=query, k=k)
         except ValidationError as e:
             raise PydanticError("Bad input", e, RetrievingError)
         retriever = RetrieverPipeline(valid_input.k)
-        retrieved_chunk = retriever.retrieve_chunks_for_query(valid_input.query)
+        retrieved_chunk = retriever.retrieve_chunks_for_query(
+            valid_input.query
+        )
 
         return retrieved_chunk
 
@@ -132,7 +134,7 @@ class Flags:
         except ValidationError as e:
             raise PydanticError("Bad input", e, EvaluateError)
         evaluation = Evaluation(
-            valid_input.student_search_results_path, 
+            valid_input.student_search_results_path,
             valid_input.dataset_path
         )
 

@@ -4,12 +4,16 @@ from torch import cuda
 from src.utils.file_manager import FileManager
 from src.utils.default_path import DefaultPath
 
+
 class ModeModel(BaseModel):
     mode: Literal["cuda", "cpu", "bm25-only", "default"] = "default"
 
     @field_validator('mode', mode="after")
     @classmethod
-    def set_mode(cls, value):
+    def set_mode(
+        cls,
+        value: Literal["cuda", "cpu", "bm25-only", "default"] = "default"
+    ) -> str:
         mode = value
 
         if value != "default":
@@ -23,17 +27,17 @@ class ModeModel(BaseModel):
         return mode
 
     @property
-    def can_embed(self):
+    def can_embed(self) -> bool:
         return False if self.get_mode == "bm25-only" else True
 
     @property
-    def get_mode(self):
+    def get_mode(self) -> str:
         return self.mode
 
-    def load_mode(self):
+    def load_mode(self) -> None:
         self.mode = FileManager().load(DefaultPath.metadata, ModeModel).mode
 
-    def save_mode(self):
+    def save_mode(self) -> None:
         FileManager.write({"mode": self.get_mode}, DefaultPath.metadata)
 
 
@@ -43,11 +47,6 @@ class CheckIndex(BaseModel):
     repository_path: str = Field(min_length=1)
     chunk_overlap: StrictInt = Field(ge=0)
     mode: ModeModel
-
-    @field_validator("mode", mode="before")
-    @classmethod
-    def normalize_device(cls, value):
-        return ModeModel(mode=value)
 
 
 class CheckSearch(BaseModel):

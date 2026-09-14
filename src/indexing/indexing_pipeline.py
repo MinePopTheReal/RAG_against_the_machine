@@ -8,6 +8,7 @@ from pathlib import Path
 from tqdm import tqdm
 from src.models.check_input import ModeModel
 
+
 class IndexingPipeline:
     def __init__(
         self,
@@ -31,12 +32,12 @@ class IndexingPipeline:
         valid_extensions = {"py", "txt", "md"}
 
         if not listdir(root_path_of_data):
-            raise(IndexingError("The repository you specified is empty."))
+            raise (IndexingError("The repository you specified is empty."))
         try:
             if not listdir(root_path_of_data):
                 raise IndexingError("The repository you specified is empty.")
         except (FileNotFoundError, NotADirectoryError, PermissionError) as e:
-            raise IndexingError(e) from e
+            raise IndexingError(f"Fail to open file: {e}") from e
 
         for current_path, _, files in tqdm(
             list(walk(root_path_of_data)),
@@ -64,7 +65,7 @@ class IndexingPipeline:
                 self.corpus.extend(texts)
                 self.chunks.extend(chunks)
 
-        if not self.corpus: 
+        if not self.corpus:
             raise IndexingError(
                 "No usable files were found in the provided repository.\n"
                 "Files may be empty or have an unsupported extension.\n"

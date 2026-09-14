@@ -18,7 +18,7 @@ class FileManager:
         except ValueError as e:
             raise Error(
                 "The file you tried to open is not a "
-                f"valid file of the type you specified:"
+                "valid file of the type you specified"
             ) from e
         return result
 

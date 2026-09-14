@@ -51,17 +51,4 @@ class ReRank:
 
             ranked_idxs.append(chunks_idxs[corpus_id])
 
-        ranked_idxs: list[int] = []
-
-        for result in results[:k]:
-            corpus_id = result["corpus_id"]
-
-            if not isinstance(corpus_id, int):
-                raise TypeError(
-                    "Expected corpus_id to be int, got",
-                    f"{type(corpus_id).__name__}"
-                )
-
-            ranked_idxs.append(chunks_idxs[corpus_id])
-
         return ranked_idxs
