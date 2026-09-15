@@ -1,8 +1,15 @@
-from pydantic import BaseModel, Field, ConfigDict, StrictInt, field_validator
-from typing import Literal
-from torch import cuda
 from src.utils.file_manager import FileManager
 from src.utils.default_path import DefaultPath
+from typing import Literal, Self
+from torch import cuda
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict,
+    StrictInt,
+    field_validator,
+    model_validator
+    )
 
 
 class ModeModel(BaseModel):
@@ -47,6 +54,15 @@ class CheckIndex(BaseModel):
     repository_path: str = Field(min_length=1)
     chunk_overlap: StrictInt = Field(ge=0)
     mode: ModeModel
+
+    @model_validator(mode="after")
+    def check_overlap_and_size(self) -> Self:
+        if self.chunk_overlap >= self.max_chunk_size:
+            raise ValueError(
+                "chunk_overlap must be "
+                "smaller than max_chunk_size"
+            )
+        return self
 
 
 class CheckSearch(BaseModel):

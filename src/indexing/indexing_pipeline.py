@@ -31,8 +31,6 @@ class IndexingPipeline:
     ) -> None:
         valid_extensions = {"py", "txt", "md"}
 
-        if not listdir(root_path_of_data):
-            raise (IndexingError("The repository you specified is empty."))
         try:
             if not listdir(root_path_of_data):
                 raise IndexingError("The repository you specified is empty.")

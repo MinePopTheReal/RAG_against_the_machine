@@ -25,7 +25,7 @@ from src.message.errors import (
 from typing import Any, Literal
 
 
-class Flags:
+class CLI:
     @staticmethod
     def index(
         max_chunk_size: int = 2000,
@@ -33,7 +33,6 @@ class Flags:
         chunk_overlap: int = 200,
         mode: Literal["cuda", "cpu", "bm25-only", "default"] = "bm25-only"
     ) -> None:
-        print(chunk_overlap, type(chunk_overlap))
         try:
             valid_input = CheckIndex(
                 max_chunk_size=max_chunk_size,

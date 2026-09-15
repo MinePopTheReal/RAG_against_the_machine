@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from bm25s import BM25, tokenize
 from typing import Any
 from src.models.check_input import ModeModel
+from pathlib import Path
 
 
 class Retriver(ABC):
@@ -49,6 +50,11 @@ class EmbeddingRetrieving(Retriver):
         self.model = get_model(device)
 
     def _load(self) -> Index:
+        if not Path(self.save_path).exists():
+            raise RetrievingError(
+                "The backup file for the "
+                "emedding index does not exist"
+            )
         semantic_index = read_index(str(self.save_path))
 
         return semantic_index
