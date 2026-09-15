@@ -5,6 +5,5 @@ __pycache__/
 
 data/output/
 data/processed/
-exec.sh
 moulinette-ubuntu
 test/

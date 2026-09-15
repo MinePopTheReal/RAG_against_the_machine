@@ -7,8 +7,10 @@ PDB := pdb
 
 SRC_DIR := src
 
+MODE := bm25-only
+
 run: install
-		$(UV) run python3 -m $(SRC_DIR)
+		MODE="$(MODE)" ./run.sh
 
 install:
 		$(UV) sync
