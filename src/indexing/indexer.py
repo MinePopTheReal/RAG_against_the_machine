@@ -16,24 +16,59 @@ transformers.logging.disable_progress_bar()
 
 
 class Indexer(ABC):
+    """
+    manages indexing
+    """
     def __init__(self, save_path: str):
         self.save_path: str = save_path
 
     @abstractmethod
     def _create_index(self, corpus: list[str]) -> Any:
+        """
+        Create the index
+
+        Args:
+            corpus (list[str]): list of all chunks
+
+        Returns:
+            Any: return index
+        """
         ...
 
     @abstractmethod
     def _save_index(self, index: Any) -> None:
+        """
+        Save index
+
+        Args:
+            index (Any): the index to save
+        """
         ...
 
     def create_and_save_index(self, corpus: list[str]) -> None:
+        """create and save index
+
+        Args:
+            corpus (list[str]): list of all chunks
+        """
         index = self._create_index(corpus)
         self._save_index(index)
 
 
 class IndexerBm25(Indexer):
+    """
+    bm25 indexer
+    """
     def _create_index(self, corpus: list[str]) -> BM25:
+        """
+        Create the index
+
+        Args:
+            corpus (list[str]): list of all chunks
+
+        Returns:
+            Any: return index
+        """
         corpus_tokens = tokenize(
             corpus,
             show_progress=True
@@ -44,17 +79,43 @@ class IndexerBm25(Indexer):
         return retriever
 
     def _save_index(self, index: BM25) -> None:
+        """
+        Save index
+
+        Args:
+            index (Any): the index to save
+        """
         index.save(self.save_path)
 
 
 def get_model(
-    device: ModeModel,
+    mode: ModeModel,
     model_name: str = "BAAI/bge-small-en-v1.5",
     quantized_file_name: str = "openvino_model_qint8_quantized.xml",
     export_path: str = "data/processed/bge-small-openvino"
 ) -> Any:
+    """
+    loads a model if it doesn't already have one
+    and adapts based on the selected mode
 
-    if device.get_mode == "cpu":
+    Args:
+        mode (ModeModel): the choosed mode by user
+
+        model_name (str, optional): the model for semamtic embedding.
+        Defaults to "BAAI/bge-small-en-v1.5".
+
+        quantized_file_name (str, optional): the file name for save
+        index for semantic embedding. Defaults to
+        "openvino_model_qint8_quantized.xml".
+
+        export_path (str, optional): the folder where index will
+        be save. Defaults to "data/processed/bge-small-openvino".
+
+    Returns:
+        Any: return the loaded model
+    """
+
+    if mode.get_mode == "cpu":
         export_dir = Path(export_path)
         config_file = Path(export_dir / "openvino") / "config.json"
 
@@ -82,18 +143,30 @@ def get_model(
 
 
 class IndexerSemanticEmbedding(Indexer):
+    """
+    semantic embedding indexer
+    """
     def __init__(
         self,
-        device: ModeModel,
+        mode: ModeModel,
         save_path: str = DefaultPath.semantic_index,
     ):
-        self.device = device
+        self.mode = mode
         super().__init__(save_path)
 
     def _create_index(self, corpus: list[str]) -> IndexFlatIP:
-        batch_size = 4 if self.device.get_mode == "cpu" else 256
+        """
+        Create the index
 
-        model = get_model(device=self.device)
+        Args:
+            corpus (list[str]): list of all chunks
+
+        Returns:
+            Any: return index
+        """
+        batch_size = 4 if self.mode.get_mode == "cpu" else 256
+
+        model = get_model(mode=self.mode)
 
         vector = model.encode(
             corpus,
@@ -108,4 +181,10 @@ class IndexerSemanticEmbedding(Indexer):
         return index
 
     def _save_index(self, index: Index) -> None:
+        """
+        Save index
+
+        Args:
+            index (Any): the index to save
+        """
         write_index(index, str(self.save_path))

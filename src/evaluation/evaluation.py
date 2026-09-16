@@ -11,6 +11,9 @@ from typing import Any
 
 
 class Evaluation:
+    """
+    Check quality of retrieving using iou
+    """
     def __init__(
         self,
         student_search_results_path: str,
@@ -20,6 +23,11 @@ class Evaluation:
         self.dataset_path = dataset_path
 
     def _load_jsons(self) -> Any:
+        """Load data from student_search_results_path and dataset_path
+
+        Returns:
+            Any: return loaded datas
+        """
         student_search_result = FileManager().load(
             self.student_search_results_path,
             StudentSearchResults
@@ -33,6 +41,16 @@ class Evaluation:
         source: MinimalSource,
         dataset_source: MinimalSource
     ) -> float:
+        """
+        Compute the IOU between the retrieved chunk and the one in the dataset
+
+        Args:
+            source (MinimalSource): the retrieved chunk
+            dataset_source (MinimalSource): the chunk from dataset
+
+        Returns:
+            float: return iou result
+        """
         first_index = max(
             source.first_character_index,
             dataset_source.first_character_index
@@ -65,6 +83,18 @@ class Evaluation:
         student_search_result: StudentSearchResults,
         dataset: RagDataset
     ) -> list[float]:
+        """
+        Calculate the total score (incrementing for each iou > 0.5),
+        the iou is calculated for each chunk of all questions,
+        for multiple recall values.
+
+        Args:
+            student_search_result (StudentSearchResults): the retrieved chunk
+            dataset (RagDataset): the chunk from dataset
+
+        Returns:
+            list[float]: total valid chunks / number of questions
+        """
         search_results = student_search_result.search_results
         dataset_id_and_sources = {}
         for data in dataset.rag_questions:
@@ -102,6 +132,9 @@ class Evaluation:
         return results_for_each_recall
 
     def display_evaluation(self) -> None:
+        """
+        Display of results
+        """
         student_search_result, dataset = self._load_jsons()
 
         result = self.calculation(student_search_result, dataset)

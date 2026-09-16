@@ -22,11 +22,14 @@ getLogger("huggingface_hub").setLevel(ERROR)
 
 
 class RetrieverPipeline:
+    """
+    retrieve pipeline
+    """
     def __init__(self, k: int) -> None:
         self.k = k
 
-        self.device = ModeModel()
-        self.device.load_mode()
+        self.mode = ModeModel()
+        self.mode.load_mode()
 
         self._executor = ThreadPoolExecutor(max_workers=2)
 
@@ -42,12 +45,12 @@ class RetrieverPipeline:
 
         self.bm25_retriever = BM25Retrieving(DefaultPath.bm25_index)
 
-        if self.device.can_embed:
+        if self.mode.can_embed:
             self.embedding_retriever = EmbeddingRetrieving(
                 DefaultPath.semantic_index,
-                self.device
+                self.mode
             )
-            self.reranker = ReRank(self.device)
+            self.reranker = ReRank(self.mode)
 
     def load_batches(
         self,
@@ -59,7 +62,7 @@ class RetrieverPipeline:
             self.k
         ).result()
 
-        if self.device.can_embed:
+        if self.mode.can_embed:
             embedding_batches = self._executor.submit(
                 self.embedding_retriever._retrieving,
                 queries,
@@ -81,7 +84,7 @@ class RetrieverPipeline:
     def retrieve_chunks_for_query(self, query: str) -> list[MinimalSource]:
         bm25_batches, embedding_batches = self.load_batches(query)
 
-        if self.device.can_embed and embedding_batches:
+        if self.mode.can_embed and embedding_batches:
             combined = list(set(bm25_batches[0] + embedding_batches[0]))
             result = self.reranker.re_ranking(query, combined, self.k)
         else:
@@ -100,7 +103,7 @@ class RetrieverPipeline:
         bm25_batches, embedding_batches = self.load_batches(queries)
 
         search_results = []
-        if not self.device.can_embed or not embedding_batches:
+        if not self.mode.can_embed or not embedding_batches:
             for data, bm25_idx in zip(datas, bm25_batches):
                 search_results.append(MinimalSearchResults(
                     question_id=data.question_id,

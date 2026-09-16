@@ -2,10 +2,10 @@ from pathlib import Path
 
 
 class DefaultPath:
-    repo = "data/raw/"
-
-    answer = "data/datasets/AnswerQuestions/"
-    unanswer = "data/datasets/UnanswerQuestions/"
+    """
+    # basic default path
+    """
+    repository = "data/raw/vllm-0.10.1"
 
     output = "data/processed/"
 

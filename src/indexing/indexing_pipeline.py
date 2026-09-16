@@ -10,13 +10,16 @@ from src.models.check_input import ModeModel
 
 
 class IndexingPipeline:
+    """
+    The entire pipeline for indexing and chunking
+    """
     def __init__(
         self,
         chunk_size: int,
         chunk_overlap: int,
-        device: ModeModel
+        mode: ModeModel
     ):
-        self.device = device
+        self.mode = mode
         self.chunk_size: int = chunk_size
         self.chunk_overlap: int = chunk_overlap
 
@@ -29,6 +32,13 @@ class IndexingPipeline:
         self,
         root_path_of_data: str,
     ) -> None:
+        """
+        It goes through the entire folder, and every file
+        with a valid extension will be chunked and save it
+
+        Args:
+            root_path_of_data (str): repository path
+        """
         valid_extensions = {"py", "txt", "md"}
 
         try:
@@ -72,12 +82,15 @@ class IndexingPipeline:
         self.chunker.output(self.chunks, self.corpus)
 
     def indexing(self) -> None:
+        """_
+        create and save indexs
+        """
         indexer_bm25 = IndexerBm25(DefaultPath.bm25_index)
         indexer_bm25.create_and_save_index(self.corpus)
 
-        if self.device.can_embed:
+        if self.mode.can_embed:
             indexer_semanctic = IndexerSemanticEmbedding(
-                self.device,
+                self.mode,
                 DefaultPath.semantic_index
                 )
             indexer_semanctic.create_and_save_index(self.corpus)

@@ -29,6 +29,9 @@ class Error(Exception):
 
 
 class PydanticError(Error):
+    """
+    Custom display error for pydantic error
+    """
     def __init__(
         self,
         message: str,

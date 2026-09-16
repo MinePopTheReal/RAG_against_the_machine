@@ -3,10 +3,19 @@ from src.models.models import MinimalSource
 
 
 class Augmenting:
+    """
+    Allows you to expand a base context with previously
+    selected sources using the retrieval function
+    """
     def __init__(self, retrieved_sources: list[MinimalSource]):
         self.retrieved_sources = retrieved_sources
 
     def _load_chunk_from_minimal_source(self) -> list[str]:
+        """loads the selected chunks choose by retrieving
+
+        Returns:
+            list[str]: The different chunks
+        """
         chunks: list[str] = []
 
         for source in self.retrieved_sources:
@@ -19,6 +28,16 @@ class Augmenting:
         return chunks
 
     def create_contexte(self, query: str) -> list[dict[str, str]]:
+        """Create a context tailored to the expected input
+        from Ollama, making sure to add the retrieved sources
+        to the context.
+
+        Args:
+            query (str): The question the LLM must answer
+
+        Returns:
+            list[dict[str, str]]: An object suitable for Ollama
+        """
         chunks = self._load_chunk_from_minimal_source()
 
         system = (

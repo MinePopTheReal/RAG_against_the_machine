@@ -9,6 +9,9 @@ from pathlib import Path
 
 
 class Retriver(ABC):
+    """
+    retriever
+    """
     def __init__(self, save_path: str):
         self.save_path: str = save_path
 
@@ -16,20 +19,54 @@ class Retriver(ABC):
 
     @abstractmethod
     def _load(self) -> Any:
+        """load indexer
+
+        Returns:
+            Any: indexer
+        """
         ...
 
     @abstractmethod
     def _retrieving(self, queries: list[str], k: int) -> list[list[int]]:
+        """
+        retrieving
+
+        Args:
+            queries (list[str]): the questions for which we
+            need to find the chunks
+            k (int): the number of chunks
+
+        Returns:
+            list[list[int]]: a list of lists containing all the indices
+            of the retrieved sources
+        """
         ...
 
 
 class BM25Retrieving(Retriver):
     def _load(self) -> BM25:
+        """load indexer
+
+        Returns:
+            Any: indexer
+        """
         retriever = BM25.load(self.save_path)
 
         return retriever
 
     def _retrieving(self, queries: list[str] | str, k: int) -> list[list[int]]:
+        """
+        retrieving
+
+        Args:
+            queries (list[str]): the questions for which we
+            need to find the chunks
+            k (int): the number of chunks
+
+        Returns:
+            list[list[int]]: a list of lists containing all the indices
+            of the retrieved sources
+        """
         queries_tokens = tokenize(queries)
 
         docs, scores = self.retriever.retrieve(queries_tokens, k=k)
@@ -45,9 +82,14 @@ class BM25Retrieving(Retriver):
 
 
 class EmbeddingRetrieving(Retriver):
-    def __init__(self, save_path: str, device: ModeModel) -> None:
+    def __init__(self, save_path: str, mode: ModeModel) -> None:
+        """load indexer
+
+        Returns:
+            Any: indexer
+        """
         super().__init__(save_path)
-        self.model = get_model(device)
+        self.model = get_model(mode)
 
     def _load(self) -> Index:
         if not Path(self.save_path).exists():
@@ -60,6 +102,18 @@ class EmbeddingRetrieving(Retriver):
         return semantic_index
 
     def _retrieving(self, queries: list[str] | str, k: int) -> list[list[int]]:
+        """
+        retrieving
+
+        Args:
+            queries (list[str]): the questions for which we
+            need to find the chunks
+            k (int): the number of chunks
+
+        Returns:
+            list[list[int]]: a list of lists containing all the indices
+            of the retrieved sources
+        """
         if isinstance(queries, str):
             queries = [queries]
         queries_vector = self.model.encode(queries, normalize_embeddings=True)

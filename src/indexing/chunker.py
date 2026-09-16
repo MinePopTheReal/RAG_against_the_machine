@@ -41,6 +41,9 @@ FILE_EXTENSION: dict[str, Language] = {
 
 
 class Chunker:
+    """
+    The class that handles data chunking
+    """
     def __init__(self, chunk_size: int, chunk_overlap: int) -> None:
         self.chunk_size: int = chunk_size
         self.chunk_overlap: int = chunk_overlap
@@ -50,6 +53,16 @@ class Chunker:
         file_data: str,
         language: Language
     ) -> list[Document]:
+        """
+        Allows you to chunk code files
+
+        Args:
+            file_data (str): the content of the document
+            language (Language): the file's language
+
+        Returns:
+            list[Document]: the chunks in the file
+        """
         code_splitter = RecursiveCharacterTextSplitter.from_language(
             language=language,
             chunk_size=self.chunk_size,
@@ -59,6 +72,15 @@ class Chunker:
         return code_data
 
     def _txt_chunker(self, file_data: str) -> list[Document]:
+        """
+        Allows you to chunk text files
+
+        Args:
+            file_data (str): the content of the document
+
+        Returns:
+            list[Document]: the chunks in the file
+        """
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
@@ -71,6 +93,18 @@ class Chunker:
         file_data: str,
         file_path: str
     ) -> tuple[list[MinimalSource], list[str]]:
+        """
+        formats the responses in Minimal Source
+
+        Args:
+            chunks (list[Document]): a list of all the chunks
+            file_data (str): the content of the original document
+            file_path (str): the file path
+
+        Returns:
+            tuple[list[MinimalSource], list[str]]: all chunks, formatted
+            and unformatted
+        """
         final_chunks: list[MinimalSource] = []
         texts: list[str] = []
 
@@ -94,6 +128,18 @@ class Chunker:
         chunk: Document,
         start_index: int
     ) -> tuple[int, int]:
+        """
+        allows you to find the start and end indices of a chunk in a document
+
+        Args:
+            file_data (str): the content of the original document
+            chunk (Document): the chunk for which we want to find
+            the indices in the document
+            start_index (int): the index or where the search begins
+
+        Returns:
+            tuple[int, int]: the beginning and end index
+        """
         end_index = -1
         start_index = file_data.find(chunk.page_content, start_index)
         end_index = start_index + len(chunk.page_content)
@@ -105,6 +151,19 @@ class Chunker:
         file_path: str,
         extension_name: str | None
     ) -> tuple[list[MinimalSource], list[str]]:
+        """
+        will use the chunking and formatting methods to
+        process an entire document
+
+        Args:
+            file_data (str): the content of the original document
+            file_path (str): the file path
+            extension_name (str | None): the extension of the file
+
+        Returns:
+            tuple[list[MinimalSource], list[str]]: Returns a pair consisting
+            of a chunk formatter and raw chunks
+        """
         if extension_name in FILE_EXTENSION:
             chunks = self._code_chunker(
                 file_data,
@@ -118,6 +177,13 @@ class Chunker:
 
     @staticmethod
     def output(chunks: list[MinimalSource], texts: list[str]) -> None:
+        """
+        Create backup files to write the raw chunks and the formatted chunks
+
+        Args:
+            chunks (list[MinimalSource]): formatted chunks
+            texts (list[str]): raw chunks
+        """
         obj_for_json = [
             {
                 "file_path": chunk.file_path,
