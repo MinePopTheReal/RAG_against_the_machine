@@ -18,7 +18,7 @@ class ReRank:
         self.mode = mode
         self.reranker: CrossEncoder = CrossEncoder(
             "cross-encoder/ms-marco-MiniLM-L-6-v2",
-            mode=self.mode.get_mode
+            device=self.mode.get_mode
         )
         self.corpus: list[str] = self._load_corpus()
 

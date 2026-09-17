@@ -160,6 +160,7 @@ class CLI:
 
         answer = AnswerPipeline()
         result = answer.answer_generating_for_query(query, retrieved_source)
+        # print(result)
         return result
 
     @staticmethod

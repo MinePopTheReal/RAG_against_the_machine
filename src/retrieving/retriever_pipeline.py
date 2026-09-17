@@ -56,6 +56,15 @@ class RetrieverPipeline:
         self,
         queries: list[str] | str
     ) -> tuple[list[list[int]], list[list[int]] | None]:
+        """
+        
+
+        Args:
+            queries (list[str] | str): _description_
+
+        Returns:
+            tuple[list[list[int]], list[list[int]] | None]: _description_
+        """        
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,

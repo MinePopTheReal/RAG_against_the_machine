@@ -3,20 +3,20 @@
 set -e
 
 # DOCS
-# DATASET="data/datasets/UnansweredQuestions/dataset_docs_public.json"
-# SEARCH_SAVE="data/output/search_results_and_answer/"
-# SEARCH_SAVE_FILE="data/output/search_results_and_answer/dataset_docs_public.json"
-# DATASET_ANSWER="data/datasets/AnsweredQuestions/dataset_docs_public.json"
+DATASET="data/datasets/UnansweredQuestions/dataset_docs_public.json"
+SEARCH_SAVE="data/output/search_results_and_answer/"
+SEARCH_SAVE_FILE="data/output/search_results_and_answer/dataset_docs_public.json"
+DATASET_ANSWER="data/datasets/AnsweredQuestions/dataset_docs_public.json"
 
 # CODE
-DATASET="data/datasets/UnansweredQuestions/dataset_code_public.json"
-SEARCH_SAVE="data/output/search_results_and_answer/"
-SEARCH_SAVE_FILE="data/output/search_results_and_answer/dataset_code_public.json"
-DATASET_ANSWER="data/datasets/AnsweredQuestions/dataset_code_public.json"
+# DATASET="data/datasets/UnansweredQuestions/dataset_code_public.json"
+# SEARCH_SAVE="data/output/search_results_and_answer/"
+# SEARCH_SAVE_FILE="data/output/search_results_and_answer/dataset_code_public.json"
+# DATASET_ANSWER="data/datasets/AnsweredQuestions/dataset_code_public.json"
 
 ANSWER_OUTPUT="data/output/answer_results/StudentSearchResultsAndAnswer.json"
 CHUNK_SIZE=2000
-K=5
+K=10
 
 MODE=${MODE:-"bm25-only"}
 
