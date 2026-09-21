@@ -57,14 +57,16 @@ class RetrieverPipeline:
         queries: list[str] | str
     ) -> tuple[list[list[int]], list[list[int]] | None]:
         """
-        
+        For a list of questions, it will find the most appropriate chunks
+        for each question using embedding and BM25
 
         Args:
-            queries (list[str] | str): _description_
+            queries (list[str] | str): the queries
 
         Returns:
-            tuple[list[list[int]], list[list[int]] | None]: _description_
-        """        
+            tuple[list[list[int]], list[list[int]] | None]: Returns a list
+            of all questions containing the indices of all retrieved chunks
+        """
         bm25_batches = self._executor.submit(
             self.bm25_retriever._retrieving,
             queries,
@@ -86,11 +88,30 @@ class RetrieverPipeline:
     def _load_datasets(
         datasets_file_path: str
     ) -> list[AnsweredQuestion | UnansweredQuestion]:
+        """load dataset
+
+        Args:
+            datasets_file_path (str): the dataset file path
+
+        Returns:
+            list[AnsweredQuestion | UnansweredQuestion]: return the dataset
+            with the dataset type
+        """
         data = FileManager().load(datasets_file_path, RagDataset)
 
         return data.rag_questions
 
     def retrieve_chunks_for_query(self, query: str) -> list[MinimalSource]:
+        """
+        Find the most appropriate chunks from among the available
+        chunks to answer a question
+
+        Args:
+            query (str): the query
+
+        Returns:
+            list[MinimalSource]: a list of the retrieved chunks
+        """
         bm25_batches, embedding_batches = self.load_batches(query)
 
         if self.mode.can_embed and embedding_batches:
@@ -106,6 +127,18 @@ class RetrieverPipeline:
         dataset_path: str,
         save_directory: str
     ) -> str:
+        """
+        Find the most relevant excerpts from those available
+        to answer a list of questions and store the retrieved
+        chunks for each question in a JSON file
+
+        Args:
+            dataset_path (str): path to the dataset
+            save_directory (str): path to the final folder with retrieved chunk
+
+        Returns:
+            str: path to the final file
+        """
         datas = self._load_datasets(dataset_path)
         queries = [d.question for d in datas]
 
