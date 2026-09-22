@@ -125,10 +125,10 @@ When you start the indexing process, you can choose a mode (see table below) bas
 | `cuda`      |  ✅  | ✅ (PyTorch)                  | ✅         | GPU                       |
 
 ## Chunking Strategy
-Before indexing, the pipeline recursively traverses the repository specified via `--repository_path`, ensuring that every file in the corpus is included, regardless of its nesting depth, without the need to manually maintain a list of files. Each file is then divided into chunks using LangChain’s text chunking utilities,**`RecursiveCharacterTextSplitter`**, controlled by two command-line parameters:
+(Before indexing, the pipeline recursively traverses the repository specified via `--repository_path`, ensuring that every file in the corpus is included (.txt, .md, and .py),, regardless of its nesting depth, without the need to manually maintain a list of files. Each file is then divided into chunks using LangChain’s text chunking utilities,**`RecursiveCharacterTextSplitter`**, controlled by two command-line parameters:)
 
 - `--max_chunk_size` (default 2,000) — the maximum size of a chunk
-- `--chunk_overlap` (default 0) — the amount of text shared between two consecutive chunks, so that information located exactly at the boundary of a chunk is not lost from the perspective of the following chunk
+- `--chunk_overlap` (default 200) — the amount of text shared between two consecutive chunks, so that information located exactly at the boundary of a chunk is not lost from the perspective of the following chunk
 
 Chunking is handled differently by LangChain depending on the file type.
 
@@ -205,13 +205,31 @@ In addition, several other hard-to-detect bugs were discovered and fixed during 
 
 ```bash
 git clone <repository-url>
-cd RAG
-uv sync
+cd RAG_against_the_machine
+make install
 ```
 
 `uv sync` installs all dependencies declared in `pyproject.toml` / `uv.lock` into a local virtual environment.
+### Make option
 
-### Running the pipeline
+|Command  |Description                                                        |
+|---------|-------------------------------------------------------------------|
+|`run`    |Install dependencies and run the shell script (launch the pipeline)|
+|`install`|Install dependencies                                               |
+|`debug`  |Launch in debug mode (PDB)                                         |
+|`clean`  |Remove temporary files, processes, and output data                 |
+|`lint`   |Check code quality with Flake8 and Mypy                            |
+
+> **Note:** For `make run`, you can specify the mode (`bm25-only`, `cpu`, or `cuda`) like this:
+```bash
+$ make run MODE=cuda
+```
+### Run pipeline
+```bash
+make run # default with bm25-only mode you can specify that see above
+```
+
+### Running the pipeline manually
 
 ```bash
 # Indexation
